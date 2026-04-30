@@ -1,0 +1,22 @@
+# Reproducible pipeline run via Docker.
+#   docker compose run --rm pipeline run all
+#   docker compose run --rm pipeline plan
+#   docker compose run --rm pipeline run from:layout
+#
+# Output (graphs/, drawings/, metrics/, manifest.csv) is bind-mounted at
+# ./output so it persists across container runs.
+
+services:
+  pipeline:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: graph-generation:0.2.0
+    volumes:
+      - ../config:/app/config:ro
+      - ../output:/app/output
+    environment:
+      EFFECTS_OUT: /app/output
+    # Leave entrypoint alone (python -m graph_generation.cli);
+    # `command` overrides the default 'run all'.
+    command: ["plan"]
