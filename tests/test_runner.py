@@ -23,11 +23,14 @@ def test_canonical_stage_order():
     )
 
 
-def test_empty_run_clean(monkeypatch, capsys):
+def test_run_only_no_stage_clean(tmp_path):
+    """Runner should accept an empty `--only` selection cleanly without
+    invoking any stage. (Bare run_all is exercised by the slow
+    reproducibility test, since the canonical pipeline now has 7 real
+    stages registered.)"""
     cfg = load(DEFAULT_CONFIG)
-    Runner(cfg).run_all()
-    captured = capsys.readouterr()
-    assert captured.err == ""
+    runner = Runner(cfg)
+    runner.run_only([])  # nothing requested → nothing runs
 
 
 def test_planned_stages_unknown_target_errors():

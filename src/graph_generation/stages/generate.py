@@ -40,7 +40,8 @@ from . import register_stage
 def _existing_graph_ids(manifest_path: Path) -> Set[str]:
     if not manifest_path.exists() or manifest_path.stat().st_size == 0:
         return set()
-    return set(pd.read_csv(manifest_path, usecols=["graph_id"])["graph_id"])
+    ids = pd.read_csv(manifest_path, usecols=["graph_id"])["graph_id"]
+    return {str(x) for x in ids.dropna()}
 
 
 @register_stage
