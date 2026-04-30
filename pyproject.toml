@@ -33,3 +33,6 @@ packages = ["src/graph_generation"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+    "slow: end-to-end checks that exercise generators / layouts / metrics",
+]
