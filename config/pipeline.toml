@@ -1,0 +1,52 @@
+# Single source of truth for the corpus pipeline. One TOML; every stage
+# reads from here. Override per-run with --config <path>.
+#
+# Path values support ${VAR} or ${VAR:-default} env-var expansion.
+
+[pipeline]
+seed = 20260421
+out_dir = "${EFFECTS_OUT:-./output}"
+parallel_workers = 8
+
+[generate]
+count = 25000
+n_min = 10
+n_max = 75
+generators = "*"
+max_retries = 50
+
+[validate]
+n_min = 2
+n_max = 75
+density_cap = "piecewise"
+require_connected = true
+require_simple = true
+
+[sample]
+enabled = true
+seed_offset = 1
+
+[sample.caps]
+"TUDataset/QM9" = 1500
+"TUDataset/ZINC_full" = 2000
+"TUDataset/Yeast" = 2000
+"TUDataset/NCI-H23" = 2000
+"TUDataset/TRIANGLES" = 1500
+"TUDataset/GITHUB_STARGAZERS" = 3000
+"TUDataset/deezer_ego_nets" = 3000
+
+[dedup]
+enabled = true
+method = "properties"
+
+[layouts]
+selected = "*"
+exclude = ["sfdp", "twopi"]
+
+[metrics]
+selected = "*"
+
+[sources]
+benchmark = "*"
+real_world = "*"
+graphs_with_drawings = "*"
