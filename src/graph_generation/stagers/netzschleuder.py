@@ -21,6 +21,12 @@ API_NET = "https://networks.skewed.de/api/net/{slug}"
 FILE_URL_SINGLE = "https://networks.skewed.de/net/{slug}/files/{slug}.csv.zip"
 FILE_URL_SUB = "https://networks.skewed.de/net/{slug}/files/{sub_net}.csv.zip"
 
+# Per-request timeout for every urlopen below. networks.skewed.de
+# has been observed to accept a TLS connection then hang indefinitely;
+# without a timeout, urllib blocks forever and wedges the whole stage.
+# 60s is generous for the ~kB CSV archives this stager pulls.
+HTTP_TIMEOUT = 60
+
 # Netzschleuder slugs already represented in the corpus by another path —
 # previous classics stayed off netzschleuder via this list. football is
 # size-rejected anyway; the rest were imported via networkx built-ins
@@ -45,9 +51,17 @@ def _est_undirected_density(n: int, m: int, is_directed: bool,
     return m_u / max_edges if max_edges > 0 else None
 
 
-def _passes(a: dict) -> bool:
+def _passes(a: dict, n_min: int, n_max: int) -> bool:
+    """Metadata-only pre-filter: skip the download for nets we'd toss.
+
+    The size bounds come from the stager's instance config (set by the
+    Stage stage based on cohort + ``[validate]`` / ``[stage]``); the
+    largest-component and density checks are stricter than what the
+    base-class size filter does, but they save bandwidth on networks
+    promote would reject anyway.
+    """
     n, m = a.get("num_vertices"), a.get("num_edges")
-    if n is None or m is None or n < 2 or n > 75:
+    if n is None or m is None or n < n_min or n > n_max:
         return False
     if a.get("largest_component_fraction", 1.0) < 1.0:
         return False
@@ -62,7 +76,7 @@ def _fetch(url: str, dst: Path) -> bytes:
     dst.parent.mkdir(parents=True, exist_ok=True)
     if dst.exists():
         return dst.read_bytes()
-    with urllib.request.urlopen(url) as r:
+    with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as r:
         data = r.read()
     dst.write_bytes(data)
     return data
@@ -108,7 +122,7 @@ class NetzschleuderSingleNetStager(Stager):
         archives_dir = (self.staging_root / "staging" / "_archives"
                         / "netzschleuder")
         print(f"fetching {API_LIST}")
-        with urllib.request.urlopen(API_LIST) as r:
+        with urllib.request.urlopen(API_LIST, timeout=HTTP_TIMEOUT) as r:
             nets = json.loads(r.read())
         print(f"  total catalog entries: {len(nets)}")
 
@@ -120,7 +134,7 @@ class NetzschleuderSingleNetStager(Stager):
             # multi-net catalogs have analyses keyed by sub-net name; skip them
             if "num_vertices" not in a:
                 continue
-            if not _passes(a):
+            if not _passes(a, self.n_min, self.n_max):
                 continue
             candidates.append(slug)
         print(f"  single-net candidates passing pre-filter: {len(candidates)}")
@@ -152,7 +166,7 @@ class _NetzschleuderCatalogStager(Stager):
                         / "netzschleuder" / slug)
         url = API_NET.format(slug=slug)
         print(f"fetching {url}")
-        with urllib.request.urlopen(url) as r:
+        with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as r:
             meta = json.loads(r.read())
         sub_nets = meta.get("nets", [slug])
         analyses = meta.get("analyses", {})
@@ -161,7 +175,8 @@ class _NetzschleuderCatalogStager(Stager):
                 f"{slug!r} is a single-net catalog entry; this stager "
                 f"only handles multi-net catalogs."
             )
-        passing = [sn for sn in sub_nets if _passes(analyses.get(sn, {}))]
+        passing = [sn for sn in sub_nets
+                   if _passes(analyses.get(sn, {}), self.n_min, self.n_max)]
         print(f"  sub-nets passing pre-filter: {len(passing)}/{len(sub_nets)}")
 
         for sub_net in passing:

@@ -18,11 +18,14 @@ dependencies = [
   "matplotlib>=3.8",
   "seaborn>=0.13",
   "pydot>=2.0",
+  "requests>=2.31",
+  "ssgetpy>=0.1",
+  "fa2_modified>=0.4",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
-ogdf = ["ogdf-python>=0.5"]
+ogdf = ["ogdf-python>=0.3.5"]
 
 [project.scripts]
 pipeline = "graph_generation.cli:main"

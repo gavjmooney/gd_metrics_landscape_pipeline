@@ -43,9 +43,35 @@ def _read_edges(path: Path) -> List[Tuple[int, int]]:
     return edges
 
 
+def _read_node_xy(path: Path) -> Dict[int, Tuple[float, float]]:
+    """Parse cols 0-1 of ``<ds>_node_attributes.txt`` as ``(x, y)``.
+
+    TUDataset's per-node attribute file is comma-separated, one row
+    per node in indicator order (1-indexed). For sources where the
+    first two columns happen to be 2D coordinates (COIL-DEL is the
+    canonical case — image-feature pixel positions), we attach them
+    as ``x`` / ``y`` node attrs so the curator drawing survives into
+    ``graphs-with-drawings/<source>/``. Sources without coords (or
+    with non-coord first columns) just don't pass this helper a path.
+    """
+    out: Dict[int, Tuple[float, float]] = {}
+    with path.open("r", encoding="utf-8") as f:
+        for idx, line in enumerate(f, start=1):
+            parts = line.split(",")
+            if len(parts) < 2:
+                continue
+            try:
+                out[idx] = (float(parts[0].strip()),
+                            float(parts[1].strip()))
+            except ValueError:
+                continue
+    return out
+
+
 def _build_graphs(
     edges: List[Tuple[int, int]],
     node_to_graph: Dict[int, int],
+    node_xy: Dict[int, Tuple[float, float]] | None = None,
 ) -> Dict[int, nx.Graph]:
     by_graph: Dict[int, List[Tuple[int, int]]] = defaultdict(list)
     for u, v in edges:
@@ -61,15 +87,24 @@ def _build_graphs(
     out: Dict[int, nx.Graph] = {}
     for g in nodes_by_graph:
         G = nx.Graph()
-        G.add_nodes_from(nodes_by_graph[g])
+        if node_xy:
+            for n in nodes_by_graph[g]:
+                xy = node_xy.get(n)
+                if xy is not None:
+                    G.add_node(n, x=xy[0], y=xy[1])
+                else:
+                    G.add_node(n)
+        else:
+            G.add_nodes_from(nodes_by_graph[g])
         G.add_edges_from(by_graph.get(g, []))
-        G = nx.convert_node_labels_to_integers(G)
-        G.graph.clear()
-        for _, attrs in G.nodes(data=True):
-            attrs.clear()
-        for _, _, attrs in G.edges(data=True):
-            attrs.clear()
-        out[g] = G
+        # Renumber 0..n-1 deterministically while preserving node attrs.
+        mapping = {old: i for i, old in enumerate(sorted(G.nodes))}
+        H = nx.Graph()
+        for old, new in mapping.items():
+            H.add_node(new, **dict(G.nodes[old]))
+        for u, v in G.edges:
+            H.add_edge(mapping[u], mapping[v])
+        out[g] = H
     return out
 
 
@@ -115,7 +150,24 @@ class TUDatasetStager(Stager):
 
         node_to_graph = _read_indicator(indicator_path)
         edges = _read_edges(edges_path)
-        graphs = _build_graphs(edges, node_to_graph)
+
+        # graphs_with_drawings sources (currently just COIL-DEL) ship
+        # 2D coordinates in cols 0-1 of node_attributes.txt. Attach
+        # them so the curator drawing reaches the manifest cohort
+        # downstream. Topology-only sources skip this step.
+        node_xy: Dict[int, Tuple[float, float]] | None = None
+        if self.source.category == "graphs_with_drawings":
+            attrs_path = inner / f"{ds}_node_attributes.txt"
+            if attrs_path.exists():
+                node_xy = _read_node_xy(attrs_path)
+                print(f"  read {len(node_xy):,} (x, y) coords from "
+                      f"{attrs_path.name}", flush=True)
+            else:
+                print(f"  WARN: {ds} is graphs_with_drawings but no "
+                      f"{attrs_path.name} — emitting topology-only",
+                      flush=True)
+
+        graphs = _build_graphs(edges, node_to_graph, node_xy)
 
         width = max(4, len(str(max(graphs.keys()))))
         ds_lower = ds.lower()

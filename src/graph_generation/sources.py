@@ -913,19 +913,21 @@ SOURCES: dict[str, Source] = {
         category="graphs_with_drawings",
         description=(
             "Drawings submitted to Graph Drawing conference "
-            "proceedings, years GD00 through GD17 (2000-2017). "
+            "proceedings (GD98, GD99, and GD00 through GD24). "
             "Author-curated hand-tuned drawings accompanying academic "
             "papers — every layout reflects the authors' intent for "
-            "how their algorithm's output should look. Staged in "
-            "native `.geg` format; promotion converts to GraphML via "
-            "geg.read_geg + geg.write_graphml so the cohort has a "
-            "uniform reader interface."
+            "how their algorithm's output should look. Fetched from "
+            "https://github.com/hegetim/gd-collection (the `geg/` "
+            "subtree), staged in native `.geg` format; promotion "
+            "converts to GraphML via geg.read_geg so the cohort has "
+            "a uniform reader interface."
         ),
         citation=(
             "Per-drawing citations trace back to the GD proceedings "
             "for each year (Springer LNCS). See "
             "graphdrawing.org/proceedings."
         ),
+        url="https://github.com/hegetim/gd-collection",
         staging_path="staging-graphs-with-drawings/gd-collection-v1",
     ),
     "houseofgraphs": Source(

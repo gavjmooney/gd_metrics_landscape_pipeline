@@ -48,10 +48,16 @@ def _hash_manifest(path: Path) -> str:
     return h.hexdigest()
 
 
-def _hash_files(paths: Iterable[Path]) -> str:
+def _hash_files_under(root: Path, paths: Iterable[Path]) -> str:
+    """SHA256 of the (relative_path, file_bytes) pairs.
+
+    Each path is normalised against ``root`` so the hash is invariant
+    to where the per-test temp directory landed. Used to assert two
+    runs produced byte-identical content for every file in a tree.
+    """
     h = hashlib.sha256()
     for p in sorted(paths):
-        h.update(p.relative_to(p.parents[3] if len(p.parents) > 3 else p.parent).as_posix().encode())
+        h.update(p.relative_to(root).as_posix().encode())
         h.update(b"\n")
         h.update(p.read_bytes())
         h.update(b"\n")
@@ -94,11 +100,24 @@ def test_full_pipeline_byte_identical(tmp_path):
     b_graphs = list((out_b / "graphs").rglob("*.graphml"))
     assert {p.relative_to(out_a).as_posix() for p in a_graphs} == \
             {p.relative_to(out_b).as_posix() for p in b_graphs}
+    # Byte-identity on the topology graphmls — same seed must produce
+    # the same generated graphs, not just the same file names.
+    assert _hash_files_under(out_a, a_graphs) == \
+            _hash_files_under(out_b, b_graphs), \
+        "topology graphmls differ between runs"
 
     a_drawings = list((out_a / "drawings").rglob("*.graphml"))
     b_drawings = list((out_b / "drawings").rglob("*.graphml"))
     assert {p.relative_to(out_a).as_posix() for p in a_drawings} == \
             {p.relative_to(out_b).as_posix() for p in b_drawings}
+    # Byte-identity on the drawings: now that per-graph seeds are
+    # graph_id-keyed and node order is canonicalised before each
+    # layout, two runs with the same root seed must yield identical
+    # positions even at the byte level. This was previously asserted
+    # only at the file-path-set level.
+    assert _hash_files_under(out_a, a_drawings) == \
+            _hash_files_under(out_b, b_drawings), \
+        "drawing graphmls differ between runs"
 
     print(f"manifest hash: {h_man_a}")
     print(f"graphml count: {len(a_graphs)}")

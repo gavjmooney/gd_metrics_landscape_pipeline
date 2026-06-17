@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl.exe -- ps -ef)",
+      "Bash(wsl.exe *)",
+      "Bash(python -m py_compile src/graph_generation/stagers/netzschleuder.py)"
+    ]
+  }
+}

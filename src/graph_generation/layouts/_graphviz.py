@@ -13,8 +13,14 @@ def resolve_dot() -> str:
     if explicit and Path(explicit).exists():
         return explicit
     candidates = [
+        # Native Windows paths — Path() treats these as POSIX strings on
+        # WSL, so the WSL-mounted variants below are what actually
+        # resolve when the pipeline runs under WSL against a Windows
+        # Graphviz install.
         r"C:\Program Files\Graphviz\bin\dot.exe",
         r"C:\Program Files (x86)\Graphviz\bin\dot.exe",
+        "/mnt/c/Program Files/Graphviz/bin/dot.exe",
+        "/mnt/c/Program Files (x86)/Graphviz/bin/dot.exe",
     ]
     for c in candidates:
         if Path(c).exists():
@@ -25,6 +31,28 @@ def resolve_dot() -> str:
     raise RuntimeError(
         "dot binary not found - install Graphviz and either add its bin "
         "folder to PATH, or set GRAPHVIZ_DOT to the dot binary path"
+    )
+
+
+def resolve_sfdp() -> str:
+    explicit = os.environ.get("GRAPHVIZ_SFDP")
+    if explicit and Path(explicit).exists():
+        return explicit
+    candidates = [
+        r"C:\Program Files\Graphviz\bin\sfdp.exe",
+        r"C:\Program Files (x86)\Graphviz\bin\sfdp.exe",
+        "/mnt/c/Program Files/Graphviz/bin/sfdp.exe",
+        "/mnt/c/Program Files (x86)/Graphviz/bin/sfdp.exe",
+    ]
+    for c in candidates:
+        if Path(c).exists():
+            return c
+    on_path = shutil.which("sfdp")
+    if on_path:
+        return on_path
+    raise RuntimeError(
+        "sfdp binary not found - install Graphviz and either add its bin "
+        "folder to PATH, or set GRAPHVIZ_SFDP to the sfdp binary path"
     )
 
 

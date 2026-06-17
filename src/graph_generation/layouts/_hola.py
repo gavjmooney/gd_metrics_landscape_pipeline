@@ -1,8 +1,16 @@
-"""Helpers for HOLA layout via the libdialect Python binding (or shim)."""
+"""Helpers for HOLA layout via a small libdialect-backed CLI binary.
+
+We shell out to ``hola_cli`` (built from ``tools/hola_cli.cpp`` against
+the adaptagrams/libdialect source tree). TGLF goes in via a temp file
+and TGLF comes back out; positions and bends are parsed in
+:func:`parse_tglf`. The binary is located by ``$HOLA_CLI`` or by the
+``hola_cli`` name on ``PATH``.
+"""
 
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -89,37 +97,19 @@ def parse_tglf(text: str, nid_to_int: Dict) -> Tuple[Positions, Bends]:
 def run_hola(G: nx.Graph) -> Tuple[Positions, Bends]:
     """Run HOLA on G, returning (positions, bends).
 
-    Tries the ``hola`` Python package first; on ImportError, falls back
-    to the ``libdialect_cli`` binary if HOLA_CLI is set or the binary
-    is on PATH. Otherwise raises NotApplicable.
+    Resolves the binary in this order: ``$HOLA_CLI`` env var, then a
+    ``hola_cli`` on ``PATH`` (e.g. when the venv is active and
+    ``tools/build_hola_cli.sh`` installed it under ``.venv/bin/``).
+    Raises :class:`NotApplicable` if neither is found.
     """
-    try:
-        import hola  # type: ignore
-    except ImportError:
-        hola = None  # noqa: F841
-    else:
-        try:
-            return _via_python(G)
-        except Exception as e:
-            raise NotApplicable(f"hola python binding failed: {e}") from e
-
-    cli = os.environ.get("HOLA_CLI")
-    if not cli:
-        import shutil
-        cli = shutil.which("hola_cli")
+    cli = os.environ.get("HOLA_CLI") or shutil.which("hola_cli")
     if not cli or not Path(cli).exists():
         raise NotApplicable(
-            "HOLA backend not available; install the 'hola' python package "
-            "or build libdialect_cli and set HOLA_CLI to its path"
+            "HOLA backend not available; build hola_cli via "
+            "tools/build_hola_cli.sh and either put it on PATH "
+            "or set HOLA_CLI to its full path"
         )
     return _via_cli(G, cli)
-
-
-def _via_python(G: nx.Graph) -> Tuple[Positions, Bends]:
-    import hola  # type: ignore
-    tglf, nid_to_int = to_tglf(G)
-    out = hola.layout_tglf(tglf)
-    return parse_tglf(out, nid_to_int)
 
 
 def _via_cli(G: nx.Graph, cli: str) -> Tuple[Positions, Bends]:
@@ -131,7 +121,7 @@ def _via_cli(G: nx.Graph, cli: str) -> Tuple[Positions, Bends]:
     try:
         cp = subprocess.run(
             [str(cli), "--in", in_path, "--out", out_path],
-            capture_output=True, text=True, timeout=120,
+            capture_output=True, text=True, timeout=10,
         )
         if cp.returncode != 0:
             raise RuntimeError(

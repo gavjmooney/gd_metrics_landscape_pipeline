@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json as _json
 import re
 import shutil
 import urllib.request
@@ -137,9 +136,6 @@ def _parse_gpml(data: bytes) -> nx.Graph | None:
         G.add_node(gid, x=x, y=y, **node_attrs.get(gid, {}))
     for u, v, e_attrs in edges:
         if u in node_pos and v in node_pos and u != v:
-            if "bends" in e_attrs:
-                e_attrs = dict(e_attrs)
-                e_attrs["bends"] = _json.dumps(e_attrs["bends"])
             G.add_edge(u, v, **e_attrs)
 
     if G.number_of_edges() == 0:

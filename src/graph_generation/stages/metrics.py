@@ -17,8 +17,10 @@ from typing import Dict, List, Tuple
 import pandas as pd
 from tqdm import tqdm
 
-from ..manifest import resolve_drawing_path
+from .._log import fmt_dur, stopwatch
+from ..manifest import append_metric_timings, resolve_drawing_path
 from ..metrics import METRIC_REGISTRY, make_context
+from ._cleanup import clean_metric_csv, clean_metric_timings
 from .base import PipelineContext, Stage
 from . import register_stage
 
@@ -55,22 +57,41 @@ def _existing_ids(csv_path: Path) -> set[str]:
         return {row["graph_id"] for row in csv.DictReader(f)}
 
 
-def _compute_one(drawing_path: str, metric_names: List[str]
-                  ) -> Tuple[Dict[str, float], str]:
-    """Worker — returns (metric_values, error_or_blank)."""
-    import geg
-    try:
-        G = geg.read_drawing(drawing_path)
-    except Exception as e:
-        return {}, f"load_failed:{type(e).__name__}:{e}"
+def compute_in_memory(G, metric_names: List[str]
+                       ) -> Tuple[Dict[str, float], Dict[str, float]]:
+    """Compute every selected metric on an in-memory drawing graph.
+
+    Returns ``(values, per_metric_seconds)``. The graph must already
+    carry x/y on nodes and (optionally) bends on edges — i.e. the
+    output of a layout function after standardisation. Used both by
+    the standalone metrics stage (after re-reading a drawing) and by
+    the fused mode of the layout stage (compute right after the
+    layout while the graph is still in memory).
+    """
+    import time as _time
     ctx = make_context(G)
     out: Dict[str, float] = {}
+    timings: Dict[str, float] = {}
     for name in metric_names:
+        t0 = _time.perf_counter()
         try:
             out[name] = float(METRIC_REGISTRY[name].fn(G, ctx))
         except Exception:
             out[name] = float("nan")
-    return out, ""
+        timings[name] = _time.perf_counter() - t0
+    return out, timings
+
+
+def _compute_one(drawing_path: str, metric_names: List[str]
+                  ) -> Tuple[Dict[str, float], Dict[str, float], str]:
+    """Worker — returns (metric_values, per_metric_seconds, error_or_blank)."""
+    import geg
+    try:
+        G = geg.read_drawing(drawing_path)
+    except Exception as e:
+        return {}, {}, f"load_failed:{type(e).__name__}:{e}"
+    out, timings = compute_in_memory(G, metric_names)
+    return out, timings, ""
 
 
 @register_stage
@@ -98,7 +119,10 @@ class MetricsStage(Stage):
         rows = manifest.to_dict(orient="records")
 
         for layout in layouts:
-            self._run_one_layout(ctx, layout, metric_names, rows)
+            with stopwatch() as elapsed:
+                self._run_one_layout(ctx, layout, metric_names, rows)
+            print(f"[metrics] {layout}: total {fmt_dur(elapsed())}",
+                  flush=True)
 
     @staticmethod
     def _run_one_layout(ctx: PipelineContext, layout: str,
@@ -106,7 +130,15 @@ class MetricsStage(Stage):
         out_csv = ctx.out_dir / "metrics" / f"{layout}.csv"
         out_csv.parent.mkdir(parents=True, exist_ok=True)
 
-        done = _existing_ids(out_csv)
+        # Resume hygiene: drop orphan rows (graph_id no longer in
+        # manifest) and collapse duplicate rows that earlier interrupts
+        # may have left behind. The returned set is the in-memory cache
+        # key — re-reading the file later would race with this run's
+        # appends and re-skip rows we just wrote.
+        valid_ids = {str(r["graph_id"]) for r in rows}
+        done = clean_metric_csv(out_csv, valid_ids)
+        clean_metric_timings(ctx.out_dir / "_timings" / "metrics.csv",
+                              layout, valid_ids)
         is_fresh = not out_csv.exists() or out_csv.stat().st_size == 0
         cf = out_csv.open("a", newline="", encoding="utf-8")
         writer = csv.writer(cf)
@@ -132,21 +164,30 @@ class MetricsStage(Stage):
 
         n_done = n_failed = 0
         workers = max(1, ctx.config.parallel_workers)
+        timing_buffer: List[Dict] = []
 
-        def _emit(gid: str, vals: Dict[str, float]) -> None:
+        def _emit(gid: str, vals: Dict[str, float],
+                  metric_timings: Dict[str, float]) -> None:
             writer.writerow([gid] + [_fmt(vals.get(n, float("nan")))
                                        for n in metric_names])
             cf.flush()
+            timing_buffer.append({"graph_id": gid, "timings": metric_timings})
+            # Flush the timings buffer in batches so partial runs leave
+            # a usable sidecar (and so we don't carry millions of rows
+            # in memory before metrics finishes).
+            if len(timing_buffer) >= 1000:
+                append_metric_timings(ctx.out_dir, layout, timing_buffer)
+                timing_buffer.clear()
 
         try:
             if workers == 1 or len(pending) == 1:
                 for gid, path in tqdm(pending, unit="drawing",
                                         desc=f"[metrics] {layout}"):
-                    vals, err = _compute_one(path, metric_names)
+                    vals, mt, err = _compute_one(path, metric_names)
                     if err:
                         n_failed += 1
                         continue
-                    _emit(gid, vals)
+                    _emit(gid, vals, mt)
                     n_done += 1
             else:
                 with ProcessPoolExecutor(max_workers=workers) as pool:
@@ -156,12 +197,14 @@ class MetricsStage(Stage):
                                      unit="drawing",
                                      desc=f"[metrics] {layout}"):
                         gid = futures[fut]
-                        vals, err = fut.result()
+                        vals, mt, err = fut.result()
                         if err:
                             n_failed += 1
                             continue
-                        _emit(gid, vals)
+                        _emit(gid, vals, mt)
                         n_done += 1
         finally:
             cf.close()
+            if timing_buffer:
+                append_metric_timings(ctx.out_dir, layout, timing_buffer)
         print(f"[metrics] {layout}: ok={n_done} failed={n_failed}")

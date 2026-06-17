@@ -11,6 +11,15 @@ Winner selection is deterministic:
     2. Smallest source by current row count (preserves diversity in
        small named sets).
     3. Lexicographic graph_id final tiebreak.
+
+Resume contract — every loser graph_id is written to
+``manifest.dedup-audit.csv`` (column ``dropped_graph_id``) before its
+graphml is unlinked. The stage and generate stages BOTH read this
+sidecar on the next run and treat audited IDs as already-handled, so
+re-runs skip the duplicates instead of re-staging them only to have
+this stage drop them again. The audit is deterministic across runs
+because winner selection is, so a re-run with the same manifest
+produces a byte-identical audit.
 """
 
 from __future__ import annotations

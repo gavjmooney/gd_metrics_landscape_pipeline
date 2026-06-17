@@ -8,6 +8,14 @@ sampled proportionally with floor=1 per non-empty cell.
 Deterministic via the seed cascade — uses ``StageSeed.SAMPLE`` plus
 ``[sample].seed_offset`` so a refactor of the offset doesn't perturb
 the generated cohort.
+
+Resume contract — every trimmed graph_id is written to
+``manifest.sampling-audit.csv`` (column ``dropped_graph_id``) before
+its graphml is unlinked. The stage stage reads this sidecar on the
+next run alongside ``manifest.dedup-audit.csv`` and treats trimmed IDs
+as already-handled, so re-runs skip them instead of re-staging them
+only to have this stage trim them again. The seed cascade keeps the
+trimming deterministic across re-runs with the same config.
 """
 
 from __future__ import annotations
@@ -74,14 +82,28 @@ def _sample_one_source(src_df: pd.DataFrame, cap: int,
     return pd.concat(keepers).drop(columns=["_stratum"])
 
 
-def _seed_for(ctx: PipelineContext) -> int:
-    """Derive the RandomState seed from the cascade. RandomState wants
-    a 32-bit int; SeedSequence.generate_state(1) gives us one."""
+def _sample_stage_ss(ctx: PipelineContext) -> np.random.SeedSequence:
+    """Stage-level SeedSequence for sampling, with seed_offset applied.
+
+    ``seed_offset`` lets ablations re-sample without disturbing other
+    stages. It's mixed in via ``keyed`` (deterministic & order-
+    independent) rather than by spawning offset+1 children.
+    """
     sample_ss = seeds.stage(ctx.root_ss, seeds.StageSeed.SAMPLE)
     offset = ctx.config.sample.seed_offset
     if offset:
-        sample_ss = sample_ss.spawn(offset + 1)[offset]
-    return int(sample_ss.generate_state(1)[0])
+        sample_ss = seeds.keyed(sample_ss, f"offset:{offset}")
+    return sample_ss
+
+
+def _seed_for_source(stage_ss: np.random.SeedSequence, source: str) -> int:
+    """Per-source 32-bit seed for ``np.random.RandomState``.
+
+    Pure function of (stage_ss, source name): adding/removing a source
+    never changes the seed used for any other source, so the kept set
+    of one source is independent of the rest of the corpus.
+    """
+    return seeds.keyed_int(stage_ss, source)
 
 
 @register_stage
@@ -108,14 +130,19 @@ class SampleStage(Stage):
             ["graphs_with_drawings", "benchmark", "calibration", "generated"])]
         rw = df[df["category"] == "real_world"]
 
-        rng = np.random.RandomState(_seed_for(ctx))
+        stage_ss = _sample_stage_ss(ctx)
         kept_parts: List[pd.DataFrame] = []
         audit_rows: List[Dict] = []
-        for src, group in rw.groupby("source"):
+        # ``sort=True`` (the pandas default) gives a deterministic
+        # source iteration order; combined with the per-source keyed
+        # RNG below, removing or adding a source does not change the
+        # kept set for any other source.
+        for src, group in rw.groupby("source", sort=True):
             cap = caps.get(src)
             if cap is None or len(group) <= cap:
                 kept_parts.append(group)
                 continue
+            rng = np.random.RandomState(_seed_for_source(stage_ss, str(src)))
             sampled = _sample_one_source(group, cap, rng)
             kept_parts.append(sampled)
             dropped_ids = set(group["graph_id"]) - set(sampled["graph_id"])

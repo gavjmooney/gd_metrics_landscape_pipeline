@@ -22,11 +22,40 @@ docker compose -f docker/docker-compose.yml run --rm \
     pipeline run all
 ```
 
+### Native backends on a host install
+
+`ogdf-python` (the FMMM / pivot-MDS / sugiyama / planarization-ortho /
+radial-tree adapter) is on PyPI but loads `libOGDF.so` and `libCOIN.so`
+at import time. If those aren't installed system-wide, point at a
+local build with `OGDF_INSTALL_DIR`:
+
+```bash
+export OGDF_INSTALL_DIR=$HOME/adaptagrams/ogdf-build   # has lib/, include/
+```
+
+HOLA goes through a small CLI built from `tools/hola_cli.cpp`. Build
+once against your `adaptagrams/cola` source tree:
+
+```bash
+ADAPTAGRAMS_DIR=$HOME/adaptagrams/cola \
+    bash tools/build_hola_cli.sh        # writes .venv/bin/hola_cli
+```
+
+`_hola.py` resolves the binary via `$HOLA_CLI` or the `hola_cli` name
+on PATH (the venv `bin/` is enough). Without either, the HOLA layout
+is skipped with a `NotApplicable` reason.
+
 ## Pipeline DAG
 
 ```
-generate -> stage -> promote -> sample -> dedup -> layout -> metrics
+generate -> stage -> sample -> dedup -> layout -> metrics
 ```
+
+The `stage` stage parses every upstream source, applies size +
+content + cap filters, computes the 24 manifest properties, and
+writes graphmls directly to `graphs/<category>/<source>/`. (There
+used to be a separate `promote` stage that re-read every staged
+graphml; the merge halves the IO on slow filesystems.)
 
 - `pipeline run all` — full chain
 - `pipeline run <stage>` — one stage in isolation
@@ -60,9 +89,19 @@ Key sections:
 Every deterministic stage seeds via `numpy.random.SeedSequence` from
 the root `[pipeline].seed`. Run twice with the same seed and the same
 config → byte-identical manifest, graphmls, and drawings (excluding
-the wall-clock `generated_at_utc` column). External downloads
-(TUDataset, House of Graphs, SuiteSparse) are **not** byte-pinned —
-they can change upstream; that scope is intentionally excluded.
+the wall-clock `generated_at_utc` column). Per-graph, per-layout, and
+per-source seeds are **keyed by name** (graph_id, layout name, source
+name) — adding or removing one item never re-rolls the seed of any
+other.
+
+External downloads (TUDataset, House of Graphs, SuiteSparse) are
+**not** byte-pinned — they can change upstream. `drgraph` has no
+seed flag and is intrinsically stochastic. BLAS thread count affects
+last-bit numerical noise in iterative optimisers — pin
+`OMP_NUM_THREADS=1` for strict reproducibility.
+
+See [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for the full guarantee
+matrix and the test coverage that pins it.
 
 `pytest tests/test_reproducibility.py -m slow` exercises the full
 pipeline twice and asserts identity.

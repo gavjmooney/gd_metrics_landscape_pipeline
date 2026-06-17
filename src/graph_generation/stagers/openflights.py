@@ -71,7 +71,15 @@ class OpenFlightsAirportsStager(Stager):
             if not country:
                 continue
             G = nx.Graph()
-            G.add_edges_from(edge_set)
+            # Iterate the edge set in sorted order so node insertion is
+            # deterministic across processes — without this, hash-seed
+            # randomisation makes ``add_edges_from(set(...))`` produce a
+            # different node order per run, and the resulting graphml
+            # (after convert_node_labels_to_integers) is reproducible
+            # only within a single process. Cross-run comparison
+            # previously found all 59 differing graphs in the corpus
+            # came from this stager.
+            G.add_edges_from(sorted(edge_set))
             n = G.number_of_nodes()
             if n < 2 or n > 75:
                 continue

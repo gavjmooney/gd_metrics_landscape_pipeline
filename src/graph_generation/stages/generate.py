@@ -26,9 +26,11 @@ import pandas as pd
 from tqdm import tqdm
 
 from .. import seeds
+from .._log import fmt_dur, stopwatch
 from ..calibration import catalogue
 from ..manifest import (
-    ManifestWriter, graph_filename, graphs_dir, write_graph,
+    ManifestWriter, append_property_timings, graph_filename, graphs_dir,
+    write_graph,
 )
 from ..properties import compute
 from ..sampling import sample_one
@@ -37,11 +39,34 @@ from .base import PipelineContext, Stage
 from . import register_stage
 
 
+def _timing_row(graph_id: str, properties: dict, timings: dict) -> dict:
+    """Build the dict :func:`append_property_timings` expects."""
+    return {
+        "graph_id": graph_id,
+        "n_nodes": properties.get("n_nodes"),
+        "n_edges": properties.get("n_edges"),
+        "timings": timings,
+    }
+
+
 def _existing_graph_ids(manifest_path: Path) -> Set[str]:
-    if not manifest_path.exists() or manifest_path.stat().st_size == 0:
-        return set()
-    ids = pd.read_csv(manifest_path, usecols=["graph_id"])["graph_id"]
-    return {str(x) for x in ids.dropna()}
+    """Graph-ids the generate stage should treat as already-handled.
+
+    Includes manifest rows AND any IDs the dedup stage previously
+    dropped (via ``manifest.dedup-audit.csv``) — otherwise calibration
+    / exhaustive would re-emit dropped graphmls on every rerun, and
+    dedup would unlink them again, causing a per-run write/unlink
+    thrash without changing the final manifest.
+    """
+    ids: Set[str] = set()
+    if manifest_path.exists() and manifest_path.stat().st_size > 0:
+        col = pd.read_csv(manifest_path, usecols=["graph_id"])["graph_id"]
+        ids.update(str(x) for x in col.dropna())
+    audit_path = manifest_path.with_name("manifest.dedup-audit.csv")
+    if audit_path.exists() and audit_path.stat().st_size > 0:
+        col = pd.read_csv(audit_path, usecols=["dropped_graph_id"])["dropped_graph_id"]
+        ids.update(str(x) for x in col.dropna())
+    return ids
 
 
 @register_stage
@@ -51,9 +76,11 @@ class GenerateStage(Stage):
     idempotent = True
 
     def run(self, ctx: PipelineContext) -> None:
-        self._sampled(ctx)
-        self._calibration(ctx)
-        self._exhaustive_small(ctx)
+        for sub in (self._sampled, self._calibration, self._exhaustive_small):
+            with stopwatch() as elapsed:
+                sub(ctx)
+            print(f"[generate.{sub.__name__.lstrip('_')}] "
+                  f"done in {fmt_dur(elapsed())}", flush=True)
 
     def _sampled(self, ctx: PipelineContext) -> None:
         cfg = ctx.config.generate
@@ -76,6 +103,7 @@ class GenerateStage(Stage):
         n_failed_samples = 0
         stats: dict = {"tried": {}, "succeeded": {}}
 
+        timing_rows: list[dict] = []
         with ManifestWriter(ctx.manifest_path) as manifest, \
                 tqdm(total=target, initial=n_ok, unit="graph") as bar:
             while n_ok < target:
@@ -105,16 +133,22 @@ class GenerateStage(Stage):
                 existing.add(fname)
 
                 write_graph(G, gdir / fname)
+                props, timings = compute(G, return_timings=True)
                 manifest.append(
                     graph_id=fname,
                     generator=sampled.generator,
                     category="generated",
                     seed=sampled.seed,
                     params=sampled.params,
-                    properties=compute(G),
+                    properties=props,
                 )
+                timing_rows.append(_timing_row(fname, props, timings))
                 n_ok += 1
                 bar.update(1)
+
+        if timing_rows:
+            n = append_property_timings(out_dir, timing_rows)
+            print(f"[generate.sampled] wrote {n:,} property-timing rows")
 
         close_guarded_pool()
         self._print_yields(stats)
@@ -129,6 +163,7 @@ class GenerateStage(Stage):
         print(f"[generate.calibration] entries={len(entries)} "
               f"(n_max={ctx.config.generate.n_max})")
         written = skipped_existing = skipped_disconnected = 0
+        timing_rows: list[dict] = []
 
         with ManifestWriter(ctx.manifest_path) as manifest:
             for name, G in entries:
@@ -142,15 +177,19 @@ class GenerateStage(Stage):
                     continue
                 existing.add(fname)
                 write_graph(G, gdir / fname)
+                props, timings = compute(G, return_timings=True)
                 manifest.append(
                     graph_id=fname,
                     generator="calibration",
                     category="calibration",
                     seed=0,
                     params={"family": name},
-                    properties=compute(G),
+                    properties=props,
                 )
+                timing_rows.append(_timing_row(fname, props, timings))
                 written += 1
+        if timing_rows:
+            append_property_timings(out_dir, timing_rows)
         print(f"[generate.calibration] wrote={written} "
               f"skipped_existing={skipped_existing} "
               f"skipped_disconnected={skipped_disconnected}")
@@ -170,6 +209,7 @@ class GenerateStage(Stage):
         print(f"[generate.exhaustive] atlas={len(atlas)} eligible={len(eligible)}")
 
         written = skipped_existing = 0
+        timing_rows: list[dict] = []
         with ManifestWriter(ctx.manifest_path) as manifest:
             for idx, G in tqdm(eligible, unit="graph"):
                 n, m = G.number_of_nodes(), G.number_of_edges()
@@ -185,15 +225,19 @@ class GenerateStage(Stage):
                 for _, _, attrs in G.edges(data=True):
                     attrs.clear()
                 write_graph(G, gdir / fname)
+                props, timings = compute(G, return_timings=True)
                 manifest.append(
                     graph_id=fname,
                     generator="exhaustive_small",
                     category="calibration",
                     seed=0,
                     params={"atlas_index": idx, "n": n},
-                    properties=compute(G),
+                    properties=props,
                 )
+                timing_rows.append(_timing_row(fname, props, timings))
                 written += 1
+        if timing_rows:
+            append_property_timings(out_dir, timing_rows)
         print(f"[generate.exhaustive] wrote={written} "
               f"skipped_existing={skipped_existing}")
 

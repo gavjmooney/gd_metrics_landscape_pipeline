@@ -20,7 +20,7 @@ def test_default_config_loads():
     assert cfg.generate.count == 25000
     assert cfg.generate.n_max == 75
     assert cfg.validate.density_cap == "piecewise"
-    assert cfg.layouts.exclude == ["sfdp", "twopi"]
+    assert cfg.layouts.exclude == ["twopi"]
     assert cfg.dedup.method == "properties"
     assert cfg.sample.caps["TUDataset/QM9"] == 1500
 

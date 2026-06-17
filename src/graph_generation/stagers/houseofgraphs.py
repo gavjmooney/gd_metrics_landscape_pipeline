@@ -14,8 +14,6 @@ from .base import Stager, StagedGraph, register_stager
 
 API_BASE = "https://houseofgraphs.org/api"
 LIST_PAGE_SIZE = 200
-MIN_N = 8  # real_world cohort: small graphs covered by generator/calibration
-MAX_N = 75
 REQUEST_DELAY_S = 0.05
 
 
@@ -75,14 +73,18 @@ def _fetch_graph(session: requests.Session, gid: int) -> Optional[nx.Graph]:
     return G
 
 
-def _passes_filter(G: nx.Graph) -> bool:
-    n = G.number_of_nodes()
-    if n < MIN_N or n > MAX_N:
-        return False
+def _passes_content_filter(G: nx.Graph) -> bool:
+    """Connected + density-capped pre-filter (size handled upstream).
+
+    Saves bandwidth: HoG keeps trees, hairballs, and disconnected
+    components that promote would reject anyway. Size bounds come
+    from :class:`Stager` instance config.
+    """
     if G.number_of_edges() == 0:
         return False
     if not nx.is_connected(G):
         return False
+    n = G.number_of_nodes()
     if nx.density(G) > density_cap(n):
         return False
     return True
@@ -90,7 +92,13 @@ def _passes_filter(G: nx.Graph) -> bool:
 
 @register_stager
 class HouseOfGraphsStager(Stager):
-    """Pre-filtered HoG graphs: 8 <= n <= 75, connected, density-capped."""
+    """HoG graphs that pass connected + density pre-filters.
+
+    The size bound (n_min/n_max) is enforced by :class:`Stager`'s
+    base ``stage()``; this stager additionally pre-filters on
+    connectedness and density to avoid wasting bandwidth on graphs
+    that promote would reject.
+    """
 
     source_name = "houseofgraphs"
 
@@ -98,26 +106,27 @@ class HouseOfGraphsStager(Stager):
         session = requests.Session()
         ids = _list_all_ids(session)
 
-        # Resume support: skip IDs already on disk.
-        out_dir = self.staging_dir()
-        existing = set()
-        if out_dir.exists():
-            existing = {p.stem for p in out_dir.iterdir()
-                        if p.suffix == ".graphml"}
-        if existing:
-            print(f"already staged: {len(existing):,} files (will skip)",
-                  flush=True)
-
+        # Resume support: skip ids already in the manifest. The base
+        # class's existing_ids set is the source of truth — it
+        # accounts for the ``houseofgraphs_<gid>`` source-prefix
+        # convention applied at emit time.
+        skipped = 0
         for gid in tqdm(ids, desc="fetch + filter", unit="graph"):
             stem = f"houseofgraphs_{gid}"
-            if stem in existing:
+            if f"houseofgraphs_{stem}.graphml" in self.existing_ids:
+                skipped += 1
                 continue
             G = _fetch_graph(session, gid)
             if G is None:
                 time.sleep(REQUEST_DELAY_S)
                 continue
-            if not _passes_filter(G):
+            if not self._passes_size(G):
                 time.sleep(REQUEST_DELAY_S)
                 continue
-            yield StagedGraph(name=stem, graph=G)
+            if not _passes_content_filter(G):
+                time.sleep(REQUEST_DELAY_S)
+                continue
+            yield StagedGraph(name=stem, graph=G, upstream_id=str(gid))
             time.sleep(REQUEST_DELAY_S)
+        if skipped:
+            print(f"[houseofgraphs] skipped {skipped:,} already-in-manifest")

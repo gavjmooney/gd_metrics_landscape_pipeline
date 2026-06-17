@@ -1,52 +1,252 @@
-# Single source of truth for the corpus pipeline. One TOML; every stage
-# reads from here. Override per-run with --config <path>.
+# =============================================================================
+# Corpus pipeline — single source of truth.
+# =============================================================================
+# Every stage reads from this file. Override per-run with --config <path>.
+# Path values support ${VAR} and ${VAR:-default} env-var expansion so the
+# same file works on Linux / WSL / CI without edits.
 #
-# Path values support ${VAR} or ${VAR:-default} env-var expansion.
+# Schema is defined in src/graph_generation/config.py; missing required
+# fields raise a hard error rather than silently falling back to a default.
+# =============================================================================
 
+
+# -----------------------------------------------------------------------------
+# [pipeline] — top-level run parameters
+# -----------------------------------------------------------------------------
 [pipeline]
-seed = 20260421
-out_dir = "${EFFECTS_OUT:-./output}"
-parallel_workers = 8
 
+# Root seed for the SeedSequence cascade. Every deterministic stage spawns
+# its own independent stream from this one integer (StageSeed in seeds.py).
+# Changing this perturbs every stage; pin it to reproduce a published run.
+seed = 20260421
+
+# Corpus output root. Stages write graphs/, drawings/<algo>/, metrics/,
+# and the canonical manifest.csv under here. Keep this OFF Google Drive —
+# small-file writes are ~10x slower on Drive-synced paths.
+out_dir = "${EFFECTS_OUT:-./output}"
+
+# Process pool width for parallel stage sections (per-graph generation,
+# per-source staging/promotion, per-(graph, layout), per-drawing metrics).
+# Set to 1 for serial debugging. Sample and dedup are always serial
+# (they touch the manifest) and ignore this.
+#
+# On WSL/drvfs (and any system where forking with networkx already
+# loaded triggers a per-task slowdown), parallel_workers > 1 actually
+# *hurts* the layout stage's native backends — kamada-kawai went 14x
+# slower with 8 workers in benchmarking. Keep at 1 unless you've
+# verified scaling on your machine.
+parallel_workers = 1
+
+
+# -----------------------------------------------------------------------------
+# [generate] — sampled-cohort generation
+# -----------------------------------------------------------------------------
 [generate]
+
+# Target size of the sampled `generated/` cohort. The stage tops up toward
+# this number, retrying on each invalid draw. 100 consecutive whole-draw
+# failures abort the run.
 count = 25000
+
+# Inclusive node-count bounds for sampled draws. n is drawn uniformly from
+# [n_min, n_max] then a generator family eligible at that n is picked by
+# weight (Generator.weight in generators/__init__.py).
 n_min = 10
 n_max = 75
+
+# Generator selection. "*" includes every entry in REGISTRY (ER, BBA, NWS,
+# SBM, LFR, GEO, HRG, tree_uniform, caterpillar, planar_max, k_tree,
+# k_regular). A list restricts the family pool — useful for ablations,
+# e.g. generators = ["er", "bba", "tree_uniform"].
 generators = "*"
+
+# Retries per logical draw before giving up on that specific draw and
+# moving on. LFR with bad params can fail to converge; HRG can produce a
+# disconnected graph. Whole-run abort is still 100 consecutive failures.
 max_retries = 50
 
+
+# -----------------------------------------------------------------------------
+# [validate] — promotion-time filter rules
+# -----------------------------------------------------------------------------
 [validate]
+
+# Inclusive node-count bounds for promoted graphs. The promote stage applies
+# a category-aware floor on top: real_world rejects n < 8 because n ≤ 7 is
+# exhaustively enumerated by the calibration cohort and adds no new
+# structural regime. benchmark and graphs_with_drawings keep n >= n_min.
 n_min = 2
 n_max = 75
+
+# Maximum edge density. Either:
+#   "piecewise" — the standard ladder: 1.0 for n <= 8, 0.75 for 9..15,
+#                 0.6 for 16..30, 0.5 for n > 30. Admits dense small
+#                 graphs (K_n through n=8) while keeping larger graphs
+#                 below the Ghoniem hairball threshold.
+#   <float>     — a single uniform cap applied to every graph.
 density_cap = "piecewise"
+
+# Reject disconnected graphs outright. We don't auto-take the largest
+# connected component — the curator's intent (especially for
+# graphs_with_drawings and benchmark cohorts) matters.
 require_connected = true
+
+# Strip multi-edges (nx.Graph(G)) and self-loops at coercion time.
+# Effectively always true for our metric pipeline; exposed for ablations.
 require_simple = true
 
+
+# -----------------------------------------------------------------------------
+# [stage] — staging-time size filter + per-source anti-bloat caps
+# -----------------------------------------------------------------------------
+# Layered above the validate filters. Applies at write time so we don't
+# bloat the staging dir (or, for stagers with API-side metadata, before
+# the per-graph fetch even happens).
+#
+# Size filter:
+#   - real_world / benchmark: n_min_real_world <= n <= validate.n_max
+#       Mirrors the promote stage's category-aware floor — n <= 7 is
+#       fully covered by exhaustive_small (Graph Atlas) so staging
+#       them adds no new structural regime, just IO.
+#   - graphs_with_drawings: validate.n_min <= n <= validate.n_max
+#       Curator drawings are valuable even on graphs the synthetic
+#       cohort already produces, so the floor stays low.
+#
+# Cap:
+#   - default_cap applies to every source not listed under [stage.caps].
+#       Set high enough that small / curated sources flow through
+#       unchanged; the existing [sample.caps] does refined stratified
+#       down-sampling on top.
+#   - per-source caps below tighten where a single dataset would
+#       otherwise dominate the corpus with structurally-similar entries
+#       (TWITTER ego-nets, REDDIT threads, Tox21 endpoint repeats).
+# -----------------------------------------------------------------------------
+[stage]
+
+n_min_real_world = 8
+default_cap = 10000
+
+# Per-source caps. 0 = "stage everything" (override default_cap upward).
+[stage.caps]
+"TUDataset/TWITTER-Real-Graph-Partial" = 10000   # 144k near-identical 2-10 node ego-nets
+"TUDataset/ZINC_full"                  = 10000   # 250k drug-like; sample.caps trims further
+"TUDataset/QM9"                        = 10000   # 130k molecules; same chemistry repeated
+"TUDataset/Yeast"                      = 10000   # 80k NCI screen
+"TUDataset/REDDIT-MULTI-12K"           = 10000   # most graphs > 75 nodes; cap on the small ones
+"TUDataset/REDDIT-MULTI-5K"            = 10000   # same
+"TUDataset/TRIANGLES"                  = 10000   # synthetic / parametric
+"TUDataset/GITHUB_STARGAZERS"          = 10000   # social ego-nets, single network type
+"TUDataset/deezer_ego_nets"            = 10000   # social ego-nets, single network type
+
+
+# -----------------------------------------------------------------------------
+# [sample] — stratified down-sampling of capped real_world sources
+# -----------------------------------------------------------------------------
 [sample]
+
+# When false, the sample stage is a no-op. Disable for an ablation that
+# wants the full real_world pool.
 enabled = true
+
+# Offset into the SAMPLE leg of the seed cascade. Bumping this produces a
+# different sample WITHOUT disturbing generation or downstream stages —
+# useful for cross-validation runs.
 seed_offset = 1
 
+# Per-source caps. Sources not listed are kept whole. Sources at-or-below
+# their cap are kept whole. Stratification is on (n_nodes, density)
+# quintile bins (5x5 = 25 strata) with proportional allocation, floor=1
+# per non-empty bin so the distribution tails survive.
 [sample.caps]
-"TUDataset/QM9" = 1500
-"TUDataset/ZINC_full" = 2000
-"TUDataset/Yeast" = 2000
-"TUDataset/NCI-H23" = 2000
-"TUDataset/TRIANGLES" = 1500
-"TUDataset/GITHUB_STARGAZERS" = 3000
-"TUDataset/deezer_ego_nets" = 3000
+"TUDataset/QM9"               = 2500   # narrow chemistry diversity per row
+"TUDataset/ZINC_full"         = 2500   # drug-like organics
+"TUDataset/Yeast"             = 2500   # NCI60 yeast screen
+"TUDataset/NCI-H23"           = 2500   # NCI60 lung-cancer screen
+"TUDataset/TRIANGLES"         = 2500   # synthetic / parametric
+"TUDataset/GITHUB_STARGAZERS" = 2500   # social ego-nets, single network type
+"TUDataset/deezer_ego_nets"   = 2500   # social ego-nets, single network type
 
+
+# -----------------------------------------------------------------------------
+# [dedup] — cross-source isomorphism dedup
+# -----------------------------------------------------------------------------
 [dedup]
+
+# When false, the dedup stage is a no-op (every collision survives).
 enabled = true
+
+# Algorithm choice:
+#   "properties" — group rows by the rounded 24-invariant tuple from the
+#       manifest; treat each non-singleton group as one iso class. Fast
+#       (seconds on 100k rows), and 99%+ accurate because two non-iso
+#       graphs sharing all 24 invariants are functionally indistinguishable
+#       for the layout pipeline.
+#   "wl_vf2" — sub-bucket each property group by Weisfeiler-Lehman hash,
+#       then run VF2 isomorphism within each bucket. Takes time.
 method = "properties"
 
+
+# -----------------------------------------------------------------------------
+# [layouts] — which layout algorithms run
+# -----------------------------------------------------------------------------
 [layouts]
-selected = "*"
-exclude = ["sfdp", "twopi"]
 
+# "*" runs every algorithm in LAYOUT_REGISTRY (19 in the canonical set).
+# A list restricts to that subset — useful for re-running just one
+# algorithm after a bug fix, e.g. selected = ["kamada-kawai", "FMMM"].
+selected = "*"
+
+# Names removed from the `selected` set even when "*" is used.
+# twopi is the abandoned graphviz layout dropped in the refactor
+# (sankey LAYOUT_DRAWINGS does not include it).
+exclude = ["twopi"]
+
+# When false, the layout stage skips writing per-drawing graphmls and
+# computes metrics inline (in-memory) right after each layout — the
+# metrics CSV becomes the cache key and the metrics stage finds
+# nothing to do. Halves IO on slow filesystems (drvfs, network FS)
+# at the cost of re-running metrics alone (no drawings to re-read).
+write_drawings = true
+
+# Even in fused mode (write_drawings = false), keep this many drawings
+# per (cohort, source-or-generator) on disk for visual verification.
+# Picks the lexicographically-smallest graph_ids per group so the
+# sample is deterministic. Set to 0 to disable. Ignored when
+# write_drawings = true.
+verify_drawings_per_source = 5
+
+# Number of layouts to run concurrently as separate Python
+# subprocesses. Avoids the fork-with-networkx-loaded slowdown that
+# bites parallel_workers, because each subprocess starts fresh in
+# its own interpreter. Different layouts share no mutable state and
+# write to disjoint metrics CSVs, so this scales near-linearly up to
+# min(physical cores, len(selected layouts)). Set to 1 to keep the
+# canonical serial loop. Each subprocess writes its own log to
+# log.06-layout.<algo>.txt under EFFECTS_OUT.
+parallel_layouts = 12
+
+
+# -----------------------------------------------------------------------------
+# [metrics] — which readability metrics run
+# -----------------------------------------------------------------------------
 [metrics]
+
+# "*" runs every metric in METRIC_REGISTRY (11 in the canonical set:
+# angular_resolution, aspect_ratio, crossing_angle, edge_crossings,
+# edge_length_deviation, edge_orthogonality, kruskal_stress,
+# neighbourhood_preservation, node_edge_occlusion, node_resolution,
+# node_uniformity). A list restricts the subset.
 selected = "*"
 
+
+# -----------------------------------------------------------------------------
+# [sources] — per-cohort source selectors for staging + promotion
+# -----------------------------------------------------------------------------
+# Each cohort is either "*" (every Source whose `category` matches) or
+# an explicit list of source names. Use a list to skip slow downloads —
+# e.g. real_world = [] disables every external download for a fast
+# pipeline run, leaving only the generated + calibration cohorts.
 [sources]
-benchmark = "*"
-real_world = "*"
+benchmark            = "*"
+real_world           = "*"
 graphs_with_drawings = "*"

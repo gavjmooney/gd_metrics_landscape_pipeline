@@ -117,6 +117,67 @@ class ManifestWriter:
             self._file.flush()
 
 
+def append_property_timings(out_dir: Path,
+                             rows: Iterable[Dict[str, Any]]) -> int:
+    """Append per-property timing rows to ``<out>/_timings/properties.csv``.
+
+    Each input row must have ``graph_id``, ``n_nodes``, ``n_edges``,
+    and ``timings`` (a ``{prop_name: seconds}`` dict). One CSV row is
+    written per (graph, property) pair so the file can be plotted
+    seconds-vs-n grouped by property to inspect empirical complexity.
+    """
+    target = out_dir / "_timings" / "properties.csv"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    is_new = not target.exists() or target.stat().st_size == 0
+    written = 0
+    with target.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=[
+            "graph_id", "n_nodes", "n_edges", "property", "seconds"])
+        if is_new:
+            writer.writeheader()
+        for r in rows:
+            gid = r["graph_id"]
+            n = r.get("n_nodes")
+            m = r.get("n_edges")
+            for prop, secs in (r.get("timings") or {}).items():
+                writer.writerow({
+                    "graph_id": gid, "n_nodes": n, "n_edges": m,
+                    "property": prop, "seconds": f"{secs:.6f}",
+                })
+                written += 1
+        f.flush()
+    return written
+
+
+def append_metric_timings(out_dir: Path, layout: str,
+                           rows: Iterable[Dict[str, Any]]) -> int:
+    """Append per-metric timing rows to ``<out>/_timings/metrics.csv``.
+
+    One CSV row per (graph_id, layout, metric). Same shape as
+    :func:`append_property_timings` but with a ``layout`` column so a
+    single file can be sliced per algorithm.
+    """
+    target = out_dir / "_timings" / "metrics.csv"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    is_new = not target.exists() or target.stat().st_size == 0
+    written = 0
+    with target.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=[
+            "graph_id", "layout", "metric", "seconds"])
+        if is_new:
+            writer.writeheader()
+        for r in rows:
+            gid = r["graph_id"]
+            for metric, secs in (r.get("timings") or {}).items():
+                writer.writerow({
+                    "graph_id": gid, "layout": layout,
+                    "metric": metric, "seconds": f"{secs:.6f}",
+                })
+                written += 1
+        f.flush()
+    return written
+
+
 def append_rows(path: Path, rows: Iterable[Dict[str, Any]]) -> int:
     """Append a batch of pre-built rows. Acquires the module-level lock
     for the whole batch so concurrent writers from different stages stay

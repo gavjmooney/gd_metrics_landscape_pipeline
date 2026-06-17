@@ -7,6 +7,7 @@ import pkgutil
 from pathlib import Path
 from typing import Iterable, List, Sequence
 
+from .._log import fmt_dur, stopwatch
 from ..config import PipelineConfig
 from . import STAGE_ORDER, STAGE_REGISTRY
 from .base import PipelineContext, Stage
@@ -49,25 +50,40 @@ class Runner:
         self.cfg = cfg
         self.ctx = PipelineContext.from_config(cfg)
 
+    def _run_sequence(self, names: Sequence[str]) -> None:
+        """Run each stage and report per-stage + total wall time."""
+        per_stage: list[tuple[str, float]] = []
+        with stopwatch() as total:
+            for name in names:
+                with stopwatch() as elapsed:
+                    self._run_one(name)
+                per_stage.append((name, elapsed()))
+                print(f"[{name}] done in {fmt_dur(elapsed())}", flush=True)
+        if len(names) > 1:
+            print()
+            print("[pipeline] timing summary")
+            for n, dt in per_stage:
+                print(f"  {n:<10s}  {fmt_dur(dt)}")
+            print(f"  {'TOTAL':<10s}  {fmt_dur(total())}")
+
     def run_all(self) -> None:
-        for name in planned_stages():
-            self._run_one(name)
+        self._run_sequence(planned_stages())
 
     def run_only(self, targets: Sequence[str]) -> None:
-        for name in planned_stages(targets):
-            self._run_one(name)
+        self._run_sequence(planned_stages(targets))
 
     def run_from(self, start: str) -> None:
         if start not in STAGE_ORDER:
             raise ValueError(f"unknown stage: {start!r}")
         i = STAGE_ORDER.index(start)
-        for name in planned_stages():
-            if STAGE_ORDER.index(name) >= i:
-                self._run_one(name)
+        names = [n for n in planned_stages()
+                 if STAGE_ORDER.index(n) >= i]
+        self._run_sequence(names)
 
     def _run_one(self, name: str) -> None:
         cls = STAGE_REGISTRY[name]
         stage: Stage = cls()
+        print(f"[{name}] starting", flush=True)
         stage.run(self.ctx)
 
 
