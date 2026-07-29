@@ -22,7 +22,7 @@ def test_default_config_loads():
     assert cfg.validate.density_cap == "piecewise"
     assert cfg.layouts.exclude == ["twopi"]
     assert cfg.dedup.method == "properties"
-    assert cfg.sample.caps["TUDataset/QM9"] == 1500
+    assert cfg.sample.caps["TUDataset/QM9"] == 2500
 
 
 def test_env_var_expansion(tmp_path, monkeypatch):

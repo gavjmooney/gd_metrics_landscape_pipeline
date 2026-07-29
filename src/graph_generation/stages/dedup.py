@@ -41,6 +41,20 @@ _TIER_NAMED = 1
 _TIER_BULK = 2
 
 
+def _read_graph_any(path) -> nx.Graph:
+    """Read a staged graph for isomorphism testing, dispatching on extension.
+
+    The ``graphs_with_drawings`` cohort is stored as ``.geg``; every topology
+    cohort is ``.graphml``. WL/VF2 only needs topology, but the reader must
+    still understand both formats so a ``.geg`` graph isn't silently skipped
+    (which would leave a topology duplicate un-deduped against it).
+    """
+    if str(path).endswith(".geg"):
+        import geg
+        return geg.read_geg(str(path))
+    return nx.read_graphml(path)
+
+
 def _row_tier(row: dict) -> int:
     if row.get("category") == "graphs_with_drawings":
         return _TIER_UNTOUCHABLE
@@ -211,7 +225,7 @@ class DedupStage(Stage):
             for gid in group:
                 try:
                     path = resolve_graph_path(ctx.out_dir, rows_by_id[gid])
-                    graphs[gid] = nx.read_graphml(path)
+                    graphs[gid] = _read_graph_any(path)
                 except Exception:
                     continue
             if len(graphs) < 2:

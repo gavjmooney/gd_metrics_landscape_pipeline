@@ -1,0 +1,517 @@
+{
+  "pre_sample_manifest": {
+    "total": 232292,
+    "per_cohort": {
+      "real_world": 187843,
+      "generated": 25000,
+      "benchmark": 10713,
+      "graphs_with_drawings": 7656,
+      "calibration": 1080
+    },
+    "per_cohort_source": [
+      {
+        "category": "benchmark",
+        "source": "north",
+        "count": 1193
+      },
+      {
+        "category": "benchmark",
+        "source": "random-dag",
+        "count": 660
+      },
+      {
+        "category": "benchmark",
+        "source": "rome",
+        "count": 8860
+      },
+      {
+        "category": "calibration",
+        "source": "calibration",
+        "count": 84
+      },
+      {
+        "category": "calibration",
+        "source": "exhaustive_small",
+        "count": 996
+      },
+      {
+        "category": "generated",
+        "source": "bba",
+        "count": 2242
+      },
+      {
+        "category": "generated",
+        "source": "caterpillar",
+        "count": 1800
+      },
+      {
+        "category": "generated",
+        "source": "er",
+        "count": 2040
+      },
+      {
+        "category": "generated",
+        "source": "geo",
+        "count": 1643
+      },
+      {
+        "category": "generated",
+        "source": "hrg",
+        "count": 1898
+      },
+      {
+        "category": "generated",
+        "source": "k_regular",
+        "count": 1720
+      },
+      {
+        "category": "generated",
+        "source": "k_tree",
+        "count": 3304
+      },
+      {
+        "category": "generated",
+        "source": "lfr",
+        "count": 568
+      },
+      {
+        "category": "generated",
+        "source": "nws",
+        "count": 2268
+      },
+      {
+        "category": "generated",
+        "source": "planar_max",
+        "count": 3313
+      },
+      {
+        "category": "generated",
+        "source": "sbm",
+        "count": 2011
+      },
+      {
+        "category": "generated",
+        "source": "tree_uniform",
+        "count": 2193
+      },
+      {
+        "category": "graphs_with_drawings",
+        "source": "TUDataset/COIL-DEL",
+        "count": 3899
+      },
+      {
+        "category": "graphs_with_drawings",
+        "source": "gd_collection_v1",
+        "count": 3659
+      },
+      {
+        "category": "graphs_with_drawings",
+        "source": "ndex",
+        "count": 42
+      },
+      {
+        "category": "graphs_with_drawings",
+        "source": "pajek",
+        "count": 18
+      },
+      {
+        "category": "graphs_with_drawings",
+        "source": "wikipathways",
+        "count": 38
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/AIDS",
+        "count": 1718
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/BZR",
+        "count": 405
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/BZR_MD",
+        "count": 2
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/COLLAB",
+        "count": 1990
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/COLORS-3",
+        "count": 2580
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/COX2",
+        "count": 467
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Cuneiform",
+        "count": 267
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/DD",
+        "count": 83
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/DHFR",
+        "count": 756
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/ENZYMES",
+        "count": 559
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/ER_MD",
+        "count": 4
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/FRANKENSTEIN",
+        "count": 3656
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/GITHUB_STARGAZERS",
+        "count": 8338
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/IMDB-BINARY",
+        "count": 782
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/IMDB-MULTI",
+        "count": 786
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/KKI",
+        "count": 78
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/MSRC_21",
+        "count": 281
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/MSRC_21C",
+        "count": 209
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/MSRC_9",
+        "count": 221
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/MUTAG",
+        "count": 188
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Mutagenicity",
+        "count": 3934
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/NCI-H23",
+        "count": 10000
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/NCI1",
+        "count": 3476
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/NCI109",
+        "count": 3456
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/OHSU",
+        "count": 35
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/PROTEINS",
+        "count": 877
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/PTC_FM",
+        "count": 272
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/PTC_FR",
+        "count": 282
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/PTC_MM",
+        "count": 259
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/PTC_MR",
+        "count": 273
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Peking_1",
+        "count": 77
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/QM9",
+        "count": 10000
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/REDDIT-BINARY",
+        "count": 311
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/REDDIT-MULTI-12K",
+        "count": 1463
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/REDDIT-MULTI-5K",
+        "count": 139
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/TRIANGLES",
+        "count": 10000
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/TWITTER-Real-Graph-Partial",
+        "count": 4581
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_AR-LBD_training",
+        "count": 6367
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_ARE_training",
+        "count": 5411
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_AR_training",
+        "count": 6895
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_ATAD5_training",
+        "count": 6761
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_AhR_training",
+        "count": 6022
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_ER-LBD_training",
+        "count": 6471
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_ER_training",
+        "count": 5705
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_HSE_training",
+        "count": 6157
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_MMP_training",
+        "count": 5443
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_PPAR-gamma_training",
+        "count": 6061
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_aromatase_training",
+        "count": 5202
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Tox21_p53_training",
+        "count": 6397
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/Yeast",
+        "count": 10000
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/ZINC_full",
+        "count": 10000
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/dblp_ct1",
+        "count": 755
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/deezer_ego_nets",
+        "count": 9330
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/facebook_ct1",
+        "count": 13
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/highschool_ct1",
+        "count": 180
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/infectious_ct1",
+        "count": 200
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/mit_ct1",
+        "count": 97
+      },
+      {
+        "category": "real_world",
+        "source": "TUDataset/tumblr_ct1",
+        "count": 340
+      },
+      {
+        "category": "real_world",
+        "source": "houseofgraphs",
+        "count": 10000
+      },
+      {
+        "category": "real_world",
+        "source": "ieee_pes",
+        "count": 27
+      },
+      {
+        "category": "real_world",
+        "source": "netzschleuder",
+        "count": 18
+      },
+      {
+        "category": "real_world",
+        "source": "netzschleuder/dom",
+        "count": 122
+      },
+      {
+        "category": "real_world",
+        "source": "netzschleuder/dutch_school",
+        "count": 6
+      },
+      {
+        "category": "real_world",
+        "source": "netzschleuder/internet_top_pop",
+        "count": 214
+      },
+      {
+        "category": "real_world",
+        "source": "netzschleuder/moreno_sociograms",
+        "count": 5
+      },
+      {
+        "category": "real_world",
+        "source": "netzschleuder/moviegalaxies",
+        "count": 751
+      },
+      {
+        "category": "real_world",
+        "source": "openflights_airports",
+        "count": 64
+      },
+      {
+        "category": "real_world",
+        "source": "suitesparse_small",
+        "count": 24
+      }
+    ]
+  },
+  "stages": {
+    "stage": {
+      "filter_totals": {
+        "out_of_size": 186161,
+        "over_density_cap": 3221,
+        "disconnected": 35626,
+        "no_edges": 8
+      }
+    },
+    "sample": {
+      "after": 182124
+    },
+    "dedup": {
+      "after": 89493
+    }
+  },
+  "drawings": {
+    "per_layout": {
+      "FMMM": 89493,
+      "HOLA": 75441,
+      "arc-bfs": 89493,
+      "circular": 89493,
+      "curated": 7656,
+      "dot-ortho": 89493,
+      "drgraph": 89492,
+      "forceatlas2": 89493,
+      "fruchterman-reingold": 89493,
+      "kamada-kawai": 89493,
+      "pivot-MDS": 89493,
+      "planar": 52731,
+      "planarization-ortho": 84830,
+      "radial-tree": 6839,
+      "random": 89493,
+      "sfdp": 89493,
+      "spectral": 89493,
+      "stress-majorization": 89493,
+      "sugiyama": 89493
+    },
+    "total": 1480398
+  },
+  "metrics": [
+    "angular_resolution",
+    "aspect_ratio",
+    "crossing_angle",
+    "edge_crossings",
+    "edge_length_deviation",
+    "edge_orthogonality",
+    "kruskal_stress",
+    "neighbourhood_preservation",
+    "node_edge_occlusion",
+    "node_resolution",
+    "node_uniformity"
+  ]
+}

@@ -40,7 +40,7 @@ COPY config/ /app/config/
 # paper-artifact image build the user ships).
 RUN pip install --upgrade pip \
     && pip install \
-        "geg-metrics>=0.2.2" \
+        "geg-metrics>=0.2.4" "svgpathtools>=1.6" \
         "networkx>=3.2" "numpy>=1.24" "scipy>=1.11" \
         "pyyaml>=6.0" "tqdm>=4.66" "pandas>=2.1" \
         "matplotlib>=3.8" "seaborn>=0.13" "pydot>=2.0" \

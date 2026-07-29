@@ -1,0 +1,279 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400.0 820.0" width="1400.0" height="820.0" font-family="Helvetica,Arial,sans-serif">
+<rect width="1400.0" height="820.0" fill="white"/>
+<text x="730.20" y="30" text-anchor="middle" dominant-baseline="alphabetic" font-size="16" font-weight="bold">Layout algorithms</text>
+<text x="1146.00" y="30" text-anchor="middle" dominant-baseline="alphabetic" font-size="16" font-weight="bold">Readability metrics</text>
+<text x="245.10" y="30" text-anchor="middle" dominant-baseline="alphabetic" font-size="16" font-weight="bold">Graph sources</text>
+<text x="532.20" y="30" text-anchor="middle" dominant-baseline="alphabetic" font-size="16" font-weight="bold">Graph processing</text>
+<text x="245.10" y="56.00" text-anchor="middle" dominant-baseline="alphabetic" font-size="13" font-style="italic" fill="#333">Download, filter, compute properties</text>
+<text x="245.10" y="72.00" text-anchor="middle" dominant-baseline="alphabetic" font-size="13" font-style="italic" fill="#333">(filters: n &lt;= 75, density cap by n, connected, simple)</text>
+<text x="532.20" y="56.00" text-anchor="middle" dominant-baseline="alphabetic" font-size="13" font-style="italic" fill="#333">Stratified sample (per-source caps),</text>
+<text x="532.20" y="72.00" text-anchor="middle" dominant-baseline="alphabetic" font-size="13" font-style="italic" fill="#333">then cross-source dedup (24-property tuple)</text>
+<text x="730.20" y="56.00" text-anchor="middle" dominant-baseline="alphabetic" font-size="13" font-style="italic" fill="#333">Compute 18 layouts + curated</text>
+<text x="1146.00" y="56.00" text-anchor="middle" dominant-baseline="alphabetic" font-size="13" font-style="italic" fill="#333">Compute 11 metrics per drawing</text>
+<path d="M162.00,240.59 C185.70,240.59 185.70,239.63 209.40,239.63 L209.40,241.95 C185.70,241.95 185.70,246.98 162.00,246.98 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,261.98 C185.70,261.98 185.70,241.95 209.40,241.95 L209.40,244.27 C185.70,244.27 185.70,268.36 162.00,268.36 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,283.36 C185.70,283.36 185.70,244.27 209.40,244.27 L209.40,245.86 C185.70,245.86 185.70,288.64 162.00,288.64 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,303.64 C185.70,303.64 185.70,245.86 209.40,245.86 L209.40,247.44 C185.70,247.44 185.70,308.90 162.00,308.90 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,323.90 C185.70,323.90 185.70,247.44 209.40,247.44 L209.40,248.98 C185.70,248.98 185.70,329.10 162.00,329.10 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,344.10 C185.70,344.10 185.70,248.98 209.40,248.98 L209.40,250.41 C185.70,250.41 185.70,349.11 162.00,349.11 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,364.11 C185.70,364.11 185.70,250.41 209.40,250.41 L209.40,251.82 C185.70,251.82 185.70,369.09 162.00,369.09 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,384.09 C185.70,384.09 185.70,251.82 209.40,251.82 L209.40,253.15 C185.70,253.15 185.70,388.92 162.00,388.92 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,403.92 C185.70,403.92 185.70,253.15 209.40,253.15 L209.40,254.41 C185.70,254.41 185.70,408.63 162.00,408.63 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,423.63 C185.70,423.63 185.70,254.41 209.40,254.41 L209.40,255.62 C185.70,255.62 185.70,428.23 162.00,428.23 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,443.23 C185.70,443.23 185.70,255.62 209.40,255.62 L209.40,256.78 C185.70,256.78 185.70,447.73 162.00,447.73 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,462.73 C185.70,462.73 185.70,256.78 209.40,256.78 L209.40,257.17 C185.70,257.17 185.70,465.38 162.00,465.38 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,480.38 C185.70,480.38 185.70,328.18 209.40,328.18 L209.40,331.54 C185.70,331.54 185.70,483.88 162.00,483.88 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,498.88 C185.70,498.88 185.70,331.54 209.40,331.54 L209.40,331.82 C185.70,331.82 185.70,499.90 162.00,499.90 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,514.90 C185.70,514.90 185.70,405.86 209.40,405.86 L209.40,415.36 C185.70,415.36 185.70,525.34 162.00,525.34 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,540.34 C185.70,540.34 185.70,415.36 209.40,415.36 L209.40,416.64 C185.70,416.64 185.70,544.18 162.00,544.18 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,559.18 C185.70,559.18 185.70,416.64 209.40,416.64 L209.40,417.34 C185.70,417.34 185.70,562.03 162.00,562.03 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,577.03 C185.70,577.03 185.70,523.55 209.40,523.55 L209.40,568.77 C185.70,568.77 185.70,623.67 162.00,623.67 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,638.67 C185.70,638.67 185.70,568.77 209.40,568.77 L209.40,571.34 C185.70,571.34 185.70,649.77 162.00,649.77 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,664.77 C185.70,664.77 185.70,571.34 209.40,571.34 L209.40,571.62 C185.70,571.62 185.70,668.47 162.00,668.47 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,683.47 C185.70,683.47 185.70,571.62 209.40,571.62 L209.40,571.64 C185.70,571.64 185.70,684.36 162.00,684.36 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,699.36 C185.70,699.36 185.70,571.64 209.40,571.64 L209.40,571.64 C185.70,571.64 185.70,699.94 162.00,699.94 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,714.94 C185.70,714.94 185.70,571.64 209.40,571.64 L209.40,571.65 C185.70,571.65 185.70,715.48 162.00,715.48 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,730.48 C185.70,730.48 185.70,719.54 209.40,719.54 L209.40,724.49 C185.70,724.49 185.70,737.41 162.00,737.41 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,752.41 C185.70,752.41 185.70,724.49 209.40,724.49 L209.40,729.13 C185.70,729.13 185.70,759.13 162.00,759.13 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,774.13 C185.70,774.13 185.70,729.13 209.40,729.13 L209.40,729.18 C185.70,729.18 185.70,774.84 162.00,774.84 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,789.84 C185.70,789.84 185.70,729.18 209.40,729.18 L209.40,729.23 C185.70,729.23 185.70,790.53 162.00,790.53 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M162.00,805.53 C185.70,805.53 185.70,729.23 209.40,729.23 L209.40,729.26 C185.70,729.26 185.70,806.00 162.00,806.00 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M221.40,239.63 C274.80,239.63 274.80,405.25 328.20,405.25 L328.20,411.01 C274.80,411.01 274.80,257.17 221.40,257.17 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M221.40,328.18 C274.80,328.18 274.80,411.01 328.20,411.01 L328.20,411.26 C274.80,411.26 274.80,331.82 221.40,331.82 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M221.40,405.86 C274.80,405.86 274.80,411.26 328.20,411.26 L328.20,413.73 C274.80,413.73 274.80,417.34 221.40,417.34 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M221.40,523.55 C274.80,523.55 274.80,413.73 328.20,413.73 L328.20,456.98 C274.80,456.98 274.80,571.65 221.40,571.65 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M221.40,719.54 C274.80,719.54 274.80,456.98 328.20,456.98 L328.20,458.75 C274.80,458.75 274.80,729.26 221.40,729.26 Z" fill="rgba(108,142,191,0.45)" stroke="none"/>
+<path d="M340.20,405.25 C403.50,405.25 403.50,245.40 466.80,245.40 L466.80,278.60 C403.50,278.60 403.50,415.72 340.20,415.72 Z" fill="rgba(130,180,133,0.55)" stroke="none"/>
+<path d="M340.20,415.72 C403.50,415.72 403.50,473.68 466.80,473.68 L466.80,526.32 C403.50,526.32 403.50,442.04 340.20,442.04 Z" fill="rgba(214,166,71,0.55)" stroke="none"/>
+<path d="M340.20,442.04 C403.50,442.04 403.50,603.17 466.80,603.17 L466.80,628.03 C403.50,628.03 403.50,447.91 340.20,447.91 Z" fill="rgba(224,138,79,0.55)" stroke="none"/>
+<path d="M340.20,447.91 C403.50,447.91 403.50,707.51 466.80,707.51 L466.80,741.29 C403.50,741.29 403.50,458.75 340.20,458.75 Z" fill="rgba(198,110,94,0.55)" stroke="none"/>
+<path d="M478.80,473.68 C532.20,473.68 532.20,568.35 585.60,568.35 L585.60,609.52 C532.20,609.52 532.20,526.32 478.80,526.32 Z" fill="rgba(214,166,71,0.5)" stroke="none"/>
+<path d="M478.80,603.17 C532.20,603.17 532.20,609.52 585.60,609.52 L585.60,618.70 C532.20,618.70 532.20,628.03 478.80,628.03 Z" fill="rgba(224,138,79,0.5)" stroke="none"/>
+<path d="M478.80,707.51 C532.20,707.51 532.20,618.70 585.60,618.70 L585.60,635.65 C532.20,635.65 532.20,741.29 478.80,741.29 Z" fill="rgba(198,110,94,0.5)" stroke="none"/>
+<path d="M478.80,245.40 C601.50,245.40 601.50,126.00 724.20,126.00 L724.20,159.20 C601.50,159.20 601.50,247.41 478.80,247.41 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,247.41 C601.50,247.41 601.50,165.20 724.20,165.20 L724.20,198.40 C601.50,198.40 601.50,249.41 478.80,249.41 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,249.41 C601.50,249.41 601.50,204.40 724.20,204.40 L724.20,237.60 C601.50,237.60 601.50,251.42 478.80,251.42 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,251.42 C601.50,251.42 601.50,243.60 724.20,243.60 L724.20,276.80 C601.50,276.80 601.50,253.43 478.80,253.43 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,253.43 C601.50,253.43 601.50,282.80 724.20,282.80 L724.20,316.01 C601.50,316.01 601.50,255.43 478.80,255.43 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,255.43 C601.50,255.43 601.50,322.01 724.20,322.01 L724.20,355.21 C601.50,355.21 601.50,257.44 478.80,257.44 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,257.44 C601.50,257.44 601.50,361.21 724.20,361.21 L724.20,394.41 C601.50,394.41 601.50,259.45 478.80,259.45 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,259.45 C601.50,259.45 601.50,400.41 724.20,400.41 L724.20,433.61 C601.50,433.61 601.50,261.46 478.80,261.46 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,261.46 C601.50,261.46 601.50,439.61 724.20,439.61 L724.20,472.81 C601.50,472.81 601.50,263.46 478.80,263.46 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,263.46 C601.50,263.46 601.50,478.81 724.20,478.81 L724.20,512.01 C601.50,512.01 601.50,265.47 478.80,265.47 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,265.47 C601.50,265.47 601.50,518.01 724.20,518.01 L724.20,551.21 C601.50,551.21 601.50,267.48 478.80,267.48 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,267.48 C601.50,267.48 601.50,557.21 724.20,557.21 L724.20,590.41 C601.50,590.41 601.50,269.48 478.80,269.48 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,269.48 C601.50,269.48 601.50,596.41 724.20,596.41 L724.20,629.62 C601.50,629.62 601.50,271.49 478.80,271.49 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,271.49 C601.50,271.49 601.50,635.62 724.20,635.62 L724.20,668.82 C601.50,668.82 601.50,273.50 478.80,273.50 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,273.50 C601.50,273.50 601.50,674.82 724.20,674.82 L724.20,707.14 C601.50,707.14 601.50,275.40 478.80,275.40 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,275.40 C601.50,275.40 601.50,713.14 724.20,713.14 L724.20,743.63 C601.50,743.63 601.50,277.09 478.80,277.09 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,277.09 C601.50,277.09 601.50,749.63 724.20,749.63 L724.20,775.11 C601.50,775.11 601.50,278.28 478.80,278.28 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,278.28 C601.50,278.28 601.50,781.11 724.20,781.11 L724.20,790.82 C601.50,790.82 601.50,278.45 478.80,278.45 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M478.80,278.45 C601.50,278.45 601.50,796.82 724.20,796.82 L724.20,806.00 C601.50,806.00 601.50,278.60 478.80,278.60 Z" fill="rgba(130,180,133,0.4)" stroke="none"/>
+<path d="M736.20,126.00 C809.40,126.00 809.40,450.51 882.60,450.51 L882.60,452.38 C809.40,452.38 809.40,159.20 736.20,159.20 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,165.20 C809.40,165.20 809.40,452.38 882.60,452.38 L882.60,454.26 C809.40,454.26 809.40,198.40 736.20,198.40 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,204.40 C809.40,204.40 809.40,454.26 882.60,454.26 L882.60,456.13 C809.40,456.13 809.40,237.60 736.20,237.60 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,243.60 C809.40,243.60 809.40,456.13 882.60,456.13 L882.60,458.00 C809.40,458.00 809.40,276.80 736.20,276.80 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,282.80 C809.40,282.80 809.40,458.00 882.60,458.00 L882.60,459.87 C809.40,459.87 809.40,316.01 736.20,316.01 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,322.01 C809.40,322.01 809.40,459.87 882.60,459.87 L882.60,461.75 C809.40,461.75 809.40,355.21 736.20,355.21 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,361.21 C809.40,361.21 809.40,461.75 882.60,461.75 L882.60,463.62 C809.40,463.62 809.40,394.41 736.20,394.41 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,400.41 C809.40,400.41 809.40,463.62 882.60,463.62 L882.60,465.49 C809.40,465.49 809.40,433.61 736.20,433.61 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,439.61 C809.40,439.61 809.40,465.49 882.60,465.49 L882.60,467.37 C809.40,467.37 809.40,472.81 736.20,472.81 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,478.81 C809.40,478.81 809.40,467.37 882.60,467.37 L882.60,469.24 C809.40,469.24 809.40,512.01 736.20,512.01 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,518.01 C809.40,518.01 809.40,469.24 882.60,469.24 L882.60,471.11 C809.40,471.11 809.40,551.21 736.20,551.21 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,557.21 C809.40,557.21 809.40,471.11 882.60,471.11 L882.60,472.98 C809.40,472.98 809.40,590.41 736.20,590.41 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,596.41 C809.40,596.41 809.40,472.98 882.60,472.98 L882.60,474.86 C809.40,474.86 809.40,629.62 736.20,629.62 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,635.62 C809.40,635.62 809.40,474.86 882.60,474.86 L882.60,476.73 C809.40,476.73 809.40,668.82 736.20,668.82 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,674.82 C809.40,674.82 809.40,476.73 882.60,476.73 L882.60,478.50 C809.40,478.50 809.40,707.14 736.20,707.14 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,713.14 C809.40,713.14 809.40,478.50 882.60,478.50 L882.60,480.08 C809.40,480.08 809.40,743.63 736.20,743.63 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,749.63 C809.40,749.63 809.40,480.08 882.60,480.08 L882.60,481.19 C809.40,481.19 809.40,775.11 736.20,775.11 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,781.11 C809.40,781.11 809.40,481.19 882.60,481.19 L882.60,481.35 C809.40,481.35 809.40,790.82 736.20,790.82 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M736.20,796.82 C809.40,796.82 809.40,481.35 882.60,481.35 L882.60,481.49 C809.40,481.49 809.40,806.00 736.20,806.00 Z" fill="rgba(157,122,181,0.35)" stroke="none"/>
+<path d="M894.60,450.51 C1017.30,450.51 1017.30,141.42 1140.00,141.42 L1140.00,172.40 C1017.30,172.40 1017.30,453.33 894.60,453.33 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,453.33 C1017.30,453.33 1017.30,203.24 1140.00,203.24 L1140.00,234.22 C1017.30,234.22 1017.30,456.14 894.60,456.14 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,456.14 C1017.30,456.14 1017.30,265.06 1140.00,265.06 L1140.00,296.04 C1017.30,296.04 1017.30,458.96 894.60,458.96 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,458.96 C1017.30,458.96 1017.30,326.87 1140.00,326.87 L1140.00,357.85 C1017.30,357.85 1017.30,461.78 894.60,461.78 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,461.78 C1017.30,461.78 1017.30,388.69 1140.00,388.69 L1140.00,419.67 C1017.30,419.67 1017.30,464.59 894.60,464.59 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,464.59 C1017.30,464.59 1017.30,450.51 1140.00,450.51 L1140.00,481.49 C1017.30,481.49 1017.30,467.41 894.60,467.41 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,467.41 C1017.30,467.41 1017.30,512.33 1140.00,512.33 L1140.00,543.31 C1017.30,543.31 1017.30,470.22 894.60,470.22 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,470.22 C1017.30,470.22 1017.30,574.15 1140.00,574.15 L1140.00,605.13 C1017.30,605.13 1017.30,473.04 894.60,473.04 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,473.04 C1017.30,473.04 1017.30,635.96 1140.00,635.96 L1140.00,666.94 C1017.30,666.94 1017.30,475.86 894.60,475.86 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,475.86 C1017.30,475.86 1017.30,697.78 1140.00,697.78 L1140.00,728.76 C1017.30,728.76 1017.30,478.67 894.60,478.67 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<path d="M894.60,478.67 C1017.30,478.67 1017.30,759.60 1140.00,759.60 L1140.00,790.58 C1017.30,790.58 1017.30,481.49 894.60,481.49 Z" fill="rgba(92,139,155,0.35)" stroke="none"/>
+<rect x="209.40" y="239.63" width="12.0" height="17.55" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<rect x="223.40" y="239.40" width="67.00" height="35" fill="white" stroke="none" opacity="0.94"/>
+<text x="225.40" y="248.40" text-anchor="start" dominant-baseline="middle" font-size="14" font-weight="bold">Generated</text>
+<text x="225.40" y="264.40" text-anchor="start" dominant-baseline="middle" font-size="13" fill="#333">25,000</text>
+<rect x="209.40" y="328.18" width="12.0" height="3.65" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<rect x="223.40" y="321.00" width="81.00" height="35" fill="white" stroke="none" opacity="0.94"/>
+<text x="225.40" y="330.00" text-anchor="start" dominant-baseline="middle" font-size="14" font-weight="bold">Calibration</text>
+<text x="225.40" y="346.00" text-anchor="start" dominant-baseline="middle" font-size="13" fill="#333">1,080</text>
+<rect x="209.40" y="405.86" width="12.0" height="11.49" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<rect x="223.40" y="402.60" width="67.00" height="35" fill="white" stroke="none" opacity="0.94"/>
+<text x="225.40" y="411.60" text-anchor="start" dominant-baseline="middle" font-size="14" font-weight="bold">Benchmark</text>
+<text x="225.40" y="427.60" text-anchor="start" dominant-baseline="middle" font-size="13" fill="#333">10,713</text>
+<rect x="209.40" y="523.55" width="12.0" height="48.10" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<rect x="223.40" y="538.60" width="74.00" height="35" fill="white" stroke="none" opacity="0.94"/>
+<text x="225.40" y="547.60" text-anchor="start" dominant-baseline="middle" font-size="14" font-weight="bold">Real world</text>
+<text x="225.40" y="563.60" text-anchor="start" dominant-baseline="middle" font-size="13" fill="#333">187,843</text>
+<rect x="209.40" y="719.54" width="12.0" height="9.71" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<rect x="223.40" y="715.40" width="144.00" height="35" fill="white" stroke="none" opacity="0.94"/>
+<text x="225.40" y="724.40" text-anchor="start" dominant-baseline="middle" font-size="14" font-weight="bold">Graphs with drawings</text>
+<text x="225.40" y="740.40" text-anchor="start" dominant-baseline="middle" font-size="13" fill="#333">7,656</text>
+<rect x="150.00" y="240.59" width="12.0" height="6.39" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="243.78" text-anchor="end" dominant-baseline="middle" font-size="13">Planar (max) <tspan fill="#444" font-size="12">3,313</tspan></text>
+<rect x="150.00" y="261.98" width="12.0" height="6.38" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="265.17" text-anchor="end" dominant-baseline="middle" font-size="13">k-tree <tspan fill="#444" font-size="12">3,304</tspan></text>
+<rect x="150.00" y="283.36" width="12.0" height="5.29" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="286.00" text-anchor="end" dominant-baseline="middle" font-size="13">NWS <tspan fill="#444" font-size="12">2,268</tspan></text>
+<rect x="150.00" y="303.64" width="12.0" height="5.26" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="306.27" text-anchor="end" dominant-baseline="middle" font-size="13">BBA <tspan fill="#444" font-size="12">2,242</tspan></text>
+<rect x="150.00" y="323.90" width="12.0" height="5.20" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="326.50" text-anchor="end" dominant-baseline="middle" font-size="13">Uniform tree <tspan fill="#444" font-size="12">2,193</tspan></text>
+<rect x="150.00" y="344.10" width="12.0" height="5.01" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="346.60" text-anchor="end" dominant-baseline="middle" font-size="13">Erdos-Renyi <tspan fill="#444" font-size="12">2,040</tspan></text>
+<rect x="150.00" y="364.11" width="12.0" height="4.98" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="366.60" text-anchor="end" dominant-baseline="middle" font-size="13">SBM <tspan fill="#444" font-size="12">2,011</tspan></text>
+<rect x="150.00" y="384.09" width="12.0" height="4.84" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="386.50" text-anchor="end" dominant-baseline="middle" font-size="13">HRG <tspan fill="#444" font-size="12">1,898</tspan></text>
+<rect x="150.00" y="403.92" width="12.0" height="4.71" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="406.28" text-anchor="end" dominant-baseline="middle" font-size="13">Caterpillar <tspan fill="#444" font-size="12">1,800</tspan></text>
+<rect x="150.00" y="423.63" width="12.0" height="4.60" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="425.93" text-anchor="end" dominant-baseline="middle" font-size="13">k-regular <tspan fill="#444" font-size="12">1,720</tspan></text>
+<rect x="150.00" y="443.23" width="12.0" height="4.50" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="445.48" text-anchor="end" dominant-baseline="middle" font-size="13">Geometric <tspan fill="#444" font-size="12">1,643</tspan></text>
+<rect x="150.00" y="462.73" width="12.0" height="2.65" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="464.05" text-anchor="end" dominant-baseline="middle" font-size="13">LFR <tspan fill="#444" font-size="12">568</tspan></text>
+<rect x="150.00" y="480.38" width="12.0" height="3.50" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="482.13" text-anchor="end" dominant-baseline="middle" font-size="13">Exhaustive (n&lt;=7) <tspan fill="#444" font-size="12">996</tspan></text>
+<rect x="150.00" y="498.88" width="12.0" height="1.02" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="499.39" text-anchor="end" dominant-baseline="middle" font-size="13">Canonical <tspan fill="#444" font-size="12">84</tspan></text>
+<rect x="150.00" y="514.90" width="12.0" height="10.45" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="520.12" text-anchor="end" dominant-baseline="middle" font-size="13">Rome <tspan fill="#444" font-size="12">8,860</tspan></text>
+<rect x="150.00" y="540.34" width="12.0" height="3.83" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="542.26" text-anchor="end" dominant-baseline="middle" font-size="13">North <tspan fill="#444" font-size="12">1,193</tspan></text>
+<rect x="150.00" y="559.18" width="12.0" height="2.85" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="560.60" text-anchor="end" dominant-baseline="middle" font-size="13">Random DAG <tspan fill="#444" font-size="12">660</tspan></text>
+<rect x="150.00" y="577.03" width="12.0" height="46.64" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="600.35" text-anchor="end" dominant-baseline="middle" font-size="13">TUDataset <tspan fill="#444" font-size="12">176,612</tspan></text>
+<rect x="150.00" y="638.67" width="12.0" height="11.10" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="644.22" text-anchor="end" dominant-baseline="middle" font-size="13">House of Graphs <tspan fill="#444" font-size="12">10,000</tspan></text>
+<rect x="150.00" y="664.77" width="12.0" height="3.71" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="666.62" text-anchor="end" dominant-baseline="middle" font-size="13">Netzschleuder <tspan fill="#444" font-size="12">1,116</tspan></text>
+<rect x="150.00" y="683.47" width="12.0" height="0.89" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="683.92" text-anchor="end" dominant-baseline="middle" font-size="13">OpenFlights airports <tspan fill="#444" font-size="12">64</tspan></text>
+<rect x="150.00" y="699.36" width="12.0" height="0.58" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="699.65" text-anchor="end" dominant-baseline="middle" font-size="13">IEEE PES <tspan fill="#444" font-size="12">27</tspan></text>
+<rect x="150.00" y="714.94" width="12.0" height="0.54" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="715.21" text-anchor="end" dominant-baseline="middle" font-size="13">SuiteSparse <tspan fill="#444" font-size="12">24</tspan></text>
+<rect x="150.00" y="730.48" width="12.0" height="6.93" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="733.95" text-anchor="end" dominant-baseline="middle" font-size="13">TUDataset <tspan fill="#444" font-size="12">3,899</tspan></text>
+<rect x="150.00" y="752.41" width="12.0" height="6.71" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="755.77" text-anchor="end" dominant-baseline="middle" font-size="13">GD collection <tspan fill="#444" font-size="12">3,659</tspan></text>
+<rect x="150.00" y="774.13" width="12.0" height="0.72" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="774.49" text-anchor="end" dominant-baseline="middle" font-size="13">NDEx <tspan fill="#444" font-size="12">42</tspan></text>
+<rect x="150.00" y="789.84" width="12.0" height="0.68" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="790.19" text-anchor="end" dominant-baseline="middle" font-size="13">WikiPathways <tspan fill="#444" font-size="12">38</tspan></text>
+<rect x="150.00" y="805.53" width="12.0" height="0.47" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="146.00" y="805.76" text-anchor="end" dominant-baseline="middle" font-size="13">Pajek <tspan fill="#444" font-size="12">18</tspan></text>
+<rect x="328.20" y="405.25" width="12.0" height="53.49" fill="#6c8ebf" stroke="black" stroke-width="0.4"/>
+<text x="334.20" y="401.25" text-anchor="middle" dominant-baseline="alphabetic" font-size="14" font-weight="bold">Staged graph set</text>
+<text x="334.20" y="469.75" text-anchor="middle" font-size="13" fill="#333">232,292</text>
+<rect x="466.80" y="245.40" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<text x="472.80" y="241.40" text-anchor="middle" dominant-baseline="alphabetic" font-size="14" font-weight="bold">Admitted graphs</text>
+<text x="472.80" y="289.60" text-anchor="middle" font-size="13" fill="#333">89,493</text>
+<rect x="466.80" y="473.68" width="12.0" height="52.65" fill="#d6a647" stroke="black" stroke-width="0.4"/>
+<text x="472.80" y="469.68" text-anchor="middle" dominant-baseline="alphabetic" font-size="14" font-weight="bold">Filter out</text>
+<text x="472.80" y="537.32" text-anchor="middle" font-size="13" fill="#333">225,016</text>
+<rect x="466.80" y="603.17" width="12.0" height="24.86" fill="#e08a4f" stroke="black" stroke-width="0.4"/>
+<text x="472.80" y="599.17" text-anchor="middle" dominant-baseline="alphabetic" font-size="14" font-weight="bold">Sample out</text>
+<text x="472.80" y="639.03" text-anchor="middle" font-size="13" fill="#333">50,168</text>
+<rect x="466.80" y="707.51" width="12.0" height="33.78" fill="#c66e5e" stroke="black" stroke-width="0.4"/>
+<text x="472.80" y="703.51" text-anchor="middle" dominant-baseline="alphabetic" font-size="14" font-weight="bold">Dedup out</text>
+<text x="472.80" y="752.29" text-anchor="middle" font-size="13" fill="#333">92,631</text>
+<rect x="585.60" y="568.35" width="12.0" height="67.31" fill="#d0d0d0" stroke="black" stroke-width="0.4"/>
+<text x="591.60" y="564.35" text-anchor="middle" dominant-baseline="alphabetic" font-size="14" font-weight="bold">Discarded graphs</text>
+<text x="591.60" y="646.65" text-anchor="middle" font-size="13" fill="#333">367,815</text>
+<rect x="724.20" y="126.00" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="133.60" width="81.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="142.60" text-anchor="start" dominant-baseline="middle" font-size="13">FMMM <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="165.20" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="172.80" width="102.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="181.80" text-anchor="start" dominant-baseline="middle" font-size="13">Arc-BFS <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="204.40" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="212.00" width="109.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="221.00" text-anchor="start" dominant-baseline="middle" font-size="13">Circular <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="243.60" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="251.20" width="151.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="260.20" text-anchor="start" dominant-baseline="middle" font-size="13">Dot orthogonal <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="282.80" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="290.41" width="130.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="299.41" text-anchor="start" dominant-baseline="middle" font-size="13">ForceAtlas2 <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="322.01" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="329.61" width="193.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="338.61" text-anchor="start" dominant-baseline="middle" font-size="13">Fruchterman-Reingold <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="361.21" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="368.81" width="137.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="377.81" text-anchor="start" dominant-baseline="middle" font-size="13">Kamada-Kawai <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="400.41" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="408.01" width="116.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="417.01" text-anchor="start" dominant-baseline="middle" font-size="13">Pivot MDS <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="439.61" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="447.21" width="95.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="456.21" text-anchor="start" dominant-baseline="middle" font-size="13">Random <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="478.81" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="486.41" width="81.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="495.41" text-anchor="start" dominant-baseline="middle" font-size="13">sfdp <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="518.01" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="525.61" width="109.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="534.61" text-anchor="start" dominant-baseline="middle" font-size="13">Spectral <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="557.21" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="564.81" width="186.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="573.81" text-anchor="start" dominant-baseline="middle" font-size="13">Stress majorization <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="596.41" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="604.02" width="109.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="613.02" text-anchor="start" dominant-baseline="middle" font-size="13">Sugiyama <tspan fill="#444" font-size="12">89,493</tspan></text>
+<rect x="724.20" y="635.62" width="12.0" height="33.20" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="643.22" width="102.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="652.22" text-anchor="start" dominant-baseline="middle" font-size="13">DRGraph <tspan fill="#444" font-size="12">89,492</tspan></text>
+<rect x="724.20" y="674.82" width="12.0" height="32.32" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="681.98" width="221.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="690.98" text-anchor="start" dominant-baseline="middle" font-size="13">Planarization orthogonal <tspan fill="#444" font-size="12">84,830</tspan></text>
+<rect x="724.20" y="713.14" width="12.0" height="30.48" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="719.38" width="81.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="728.38" text-anchor="start" dominant-baseline="middle" font-size="13">HOLA <tspan fill="#444" font-size="12">75,441</tspan></text>
+<rect x="724.20" y="749.63" width="12.0" height="25.49" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="753.37" width="95.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="762.37" text-anchor="start" dominant-baseline="middle" font-size="13">Planar <tspan fill="#444" font-size="12">52,731</tspan></text>
+<rect x="724.20" y="781.11" width="12.0" height="9.71" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="776.97" width="95.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="785.97" text-anchor="start" dominant-baseline="middle" font-size="13">Curated <tspan fill="#444" font-size="12">7,656</tspan></text>
+<rect x="724.20" y="796.82" width="12.0" height="9.18" fill="#82b485" stroke="black" stroke-width="0.4"/>
+<rect x="737.20" y="792.41" width="123.00" height="18" fill="white" stroke="none" opacity="0.94"/>
+<text x="739.20" y="801.41" text-anchor="start" dominant-baseline="middle" font-size="13">Radial tree <tspan fill="#444" font-size="12">6,839</tspan></text>
+<rect x="882.60" y="450.51" width="12.0" height="30.98" fill="#9d7ab5" stroke="black" stroke-width="0.4"/>
+<rect x="896.60" y="457.00" width="88.00" height="35" fill="white" stroke="none" opacity="0.94"/>
+<text x="898.60" y="466.00" text-anchor="start" dominant-baseline="middle" font-size="14" font-weight="bold">All drawings</text>
+<text x="898.60" y="482.00" text-anchor="start" dominant-baseline="middle" font-size="13" fill="#333">1,480,398</text>
+<rect x="1140.00" y="141.42" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="156.91" text-anchor="start" dominant-baseline="middle" font-size="13">Angular resolution <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="203.24" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="218.73" text-anchor="start" dominant-baseline="middle" font-size="13">Aspect ratio <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="265.06" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="280.55" text-anchor="start" dominant-baseline="middle" font-size="13">Crossing angle <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="326.87" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="342.36" text-anchor="start" dominant-baseline="middle" font-size="13">Edge crossings <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="388.69" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="404.18" text-anchor="start" dominant-baseline="middle" font-size="13">Edge length deviation <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="450.51" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="466.00" text-anchor="start" dominant-baseline="middle" font-size="13">Edge orthogonality <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="512.33" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="527.82" text-anchor="start" dominant-baseline="middle" font-size="13">Kruskal stress <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="574.15" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="589.64" text-anchor="start" dominant-baseline="middle" font-size="13">Neighbourhood preservation <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="635.96" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="651.45" text-anchor="start" dominant-baseline="middle" font-size="13">Node-edge occlusion <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="697.78" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="713.27" text-anchor="start" dominant-baseline="middle" font-size="13">Node resolution <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+<rect x="1140.00" y="759.60" width="12.0" height="30.98" fill="#5c8b9b" stroke="black" stroke-width="0.4"/>
+<text x="1156.00" y="775.09" text-anchor="start" dominant-baseline="middle" font-size="13">Node uniformity <tspan fill="#444" font-size="12">1,480,398</tspan></text>
+</svg>

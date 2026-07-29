@@ -7,7 +7,7 @@ entry point for ad-hoc rebuilds (e.g. after dropping in extra
 drawings, or to refresh a partial run mid-flight).
 
 Usage:
-    EFFECTS_OUT=/mnt/d/pipeline-output-2 \\
+    EFFECTS_OUT=./output \\
         python tools/build_viewer.py
     # then open ``viewer.html`` in a browser. SVGs load via relative
     # paths so the page works without a webserver.

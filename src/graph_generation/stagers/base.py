@@ -25,8 +25,9 @@ yields:
    skipped to stop a single dataset from drowning the corpus with
    structurally-similar entries.
 
-Subclasses that need a custom on-disk format (e.g. yEd-flavoured
-graphml from :func:`geg.write_graphml`) override :meth:`_write`.
+The ``graphs_with_drawings`` cohort is written as ``.geg`` (JSON) by the
+base :meth:`_write` so curator edge geometry (polyline bends AND Bézier
+curves) round-trips losslessly; topology cohorts stay ``.graphml``.
 Subclasses with bandwidth-saving metadata pre-filters (NDEx, HoG,
 Netzschleuder) read ``self.n_min`` / ``self.n_max`` and reject early.
 """
@@ -134,24 +135,26 @@ class Stager(ABC):
         ...
 
     def _write(self, G: nx.Graph, path: Path) -> None:
-        """Write one graphml file.
+        """Write one graph file.
 
-        For ``graphs_with_drawings`` we default to
-        :func:`geg.write_graphml` so the curator-tuned layout (node
-        geometry, shape, colour, edge geometry) survives the
-        round-trip in the yEd-flavoured ``<y:Geometry>`` /
-        ``<y:Shape>`` markup that downstream readers (e.g.
-        ``geg.read_drawing`` / ``geg.read_graphml``) expect. Plain
-        ``nx.write_graphml`` strips the geometry into flat attrs
-        which still parse as numeric x/y but lose the visual
-        rendering information.
+        For ``graphs_with_drawings`` we write **GEG** (JSON) via
+        :func:`geg.write_geg`, not yEd GraphML. yEd ``<y:Path>`` can only
+        encode polyline bends, never Bézier control points, so a GraphML
+        round-trip silently drops every curved edge (≈23k cubic-Bézier
+        edges in gd_collection alone). GEG stores the raw SVG ``path``
+        string, so curves round-trip losslessly. The cohort's graph_ids
+        end in ``.geg`` (see :meth:`_graph_id`) so ``path`` already has the
+        right extension. Before writing we normalise edge geometry onto the
+        ``path`` attribute (see :func:`_ensure_edge_paths`) — the reader /
+        metric layer reads ``path``, not yEd ``bends``.
 
-        Topology cohorts (``benchmark`` / ``real_world``) use the
-        plain writer — there's no curator drawing to preserve.
+        Topology cohorts (``benchmark`` / ``real_world``) keep plain
+        ``nx.write_graphml`` — there's no curator drawing to preserve.
         """
         if self._preserve_attrs:
             import geg
-            geg.write_graphml(G, str(path))
+            _ensure_edge_paths(G)
+            geg.write_geg(G, str(path))
         else:
             nx.write_graphml(G, path)
 
@@ -189,9 +192,19 @@ class Stager(ABC):
         ``existing_ids`` set unions the manifest with the dedup and
         sample audit sidecars; that lookup hits if and only if the
         stem you mint matches the stem the previous run minted.
+
+        The extension carries the on-disk format: ``graphs_with_drawings``
+        graphs are stored as ``.geg`` (lossless curved-edge geometry; see
+        :meth:`_write`), every topology cohort stays ``.graphml``. Because
+        ``graph_id`` is used verbatim as the filename in
+        ``resolve_graph_path`` / ``resolve_drawing_path``, this single
+        suffix makes the staged graph and every per-layout drawing for the
+        cohort a ``.geg`` file automatically, and lets the readers/writers
+        dispatch on extension.
         """
         safe = self.source.name.replace("/", "_")
-        return f"{safe}_{sg.name}.graphml"
+        ext = "geg" if self._preserve_attrs else "graphml"
+        return f"{safe}_{sg.name}.{ext}"
 
     def stage(self) -> StageResult:
         """Run the per-source pass. Returns rows for the parent to
@@ -343,6 +356,42 @@ class Stager(ABC):
             if d > cap:
                 return False, f"over_density_cap(n={G.number_of_nodes()},d={d:.3f},cap={cap:.2f})"
         return True, ""
+
+
+def _ensure_edge_paths(G: nx.Graph) -> None:
+    """Normalise curator edge geometry onto the ``path`` attribute, in place.
+
+    The reader / metric layer reads each edge's SVG ``path`` string, not yEd
+    ``bends``. Sources differ in what they emit:
+
+    - **gd_collection** already yields ``path`` (with cubic Béziers) plus a
+      correct ``polyline`` flag — left untouched.
+    - **wikipathways** yields intermediate ``bends`` and no ``path`` — we
+      synthesise ``path = "M{u} L{bend}… L{v}"`` (mirroring
+      ``geg.io.convert.graphml_to_geg``), set ``polyline=True``, and drop the
+      now-redundant ``bends`` so the stale source-coordinate bends don't ride
+      along into the ``.geg``.
+    - **straight edges** (neither ``path`` nor ``bends``) are left without a
+      ``path`` — readers and ``to_svg`` synthesise the straight node-to-node
+      chord on demand.
+    """
+    for u, v, attrs in G.edges(data=True):
+        if attrs.get("path"):
+            continue
+        bends = attrs.get("bends")
+        if not bends:
+            continue
+        try:
+            ux, uy = float(G.nodes[u]["x"]), float(G.nodes[u]["y"])
+            vx, vy = float(G.nodes[v]["x"]), float(G.nodes[v]["y"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        segs = [f"M{ux},{uy}"]
+        segs += [f"L{float(bx)},{float(by)}" for bx, by in bends]
+        segs.append(f"L{vx},{vy}")
+        attrs["path"] = " ".join(segs)
+        attrs["polyline"] = True
+        attrs.pop("bends", None)
 
 
 def _json_compact(d: Dict[str, Any]) -> str:

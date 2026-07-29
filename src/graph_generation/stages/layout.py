@@ -192,10 +192,17 @@ def _run_one(layout_name: str, graph_path: str, drawing_path: str,
         return (graph_id, _OUTCOME_FAILED,
                 f"missing source graph: {src}", 0.0, {}, {})
 
+    # Dispatch on extension: the graphs_with_drawings cohort is stored as
+    # `.geg` so curator edge geometry (curved `path`s) loads intact; every
+    # topology cohort stays `.graphml`.
     try:
-        G = nx.read_graphml(src)
+        if src.suffix == ".geg":
+            import geg as _geg_read
+            G = _geg_read.read_geg(str(src))
+        else:
+            G = nx.read_graphml(src)
     except Exception as e:
-        return graph_id, _OUTCOME_FAILED, f"read_graphml: {e}", 0.0, {}, {}
+        return graph_id, _OUTCOME_FAILED, f"read graph: {e}", 0.0, {}, {}
 
     # Force a canonical node iteration order before handing G to any
     # layout. networkx walks nodes in insertion order, which equals the
@@ -204,6 +211,33 @@ def _run_one(layout_name: str, graph_path: str, drawing_path: str,
     # rebuild restores order-independence for every backend (native,
     # OGDF, Graphviz). Node identities are unchanged, only iteration.
     G = canonicalise_node_order(G)
+
+    # The curated passthrough is the only layout that preserves the curator's
+    # own edge routing. Capture the source edge geometry now — in source
+    # coordinates, before the rescale — as {(u, v): (path, polyline_flag)} so
+    # we can re-attach it after standardisation in the same frame as the
+    # rescaled nodes. Every other layout computes its own routing (returned
+    # as `bends`), so this stays None for them.
+    curated_geometry = None
+    if layout.name == "curated":
+        curated_geometry = {
+            (u, v): (d["path"], bool(d.get("polyline", False)))
+            for u, v, d in G.edges(data=True) if d.get("path")
+        }
+
+    # Drop any edge geometry carried in from the source so a layout only ever
+    # writes its OWN routing. The graphs_with_drawings cohort is read from
+    # ``.geg``, whose edges carry the curator's ``path``/``polyline``/``bends``
+    # (in source coordinates); without this, a non-curated layout would
+    # inherit and re-emit the curator's curves/bends — mismatched against its
+    # freshly computed node positions — corrupting both the saved drawing and
+    # the path-sensitive metrics. Each layout's geometry is (re)attached below
+    # from its returned ``bends``; the curated passthrough restores the
+    # captured ``curated_geometry`` in the rescaled frame.
+    for _, _, d in G.edges(data=True):
+        d.pop("path", None)
+        d.pop("polyline", None)
+        d.pop("bends", None)
 
     try:
         if not layout.applies_to(G):
@@ -231,6 +265,10 @@ def _run_one(layout_name: str, graph_path: str, drawing_path: str,
     metric_values: Dict[str, float] = {}
     metric_timings: Dict[str, float] = {}
     try:
+        # Keep the pre-rescale positions so the curated edge-geometry
+        # transform reuses the exact (centre, scale) standardise derives
+        # from the node bbox — geometry stays locked to the nodes.
+        raw_positions = positions
         positions, bends = standardise(positions, bends or {})
         for nid, xy in positions.items():
             if nid not in G.nodes:
@@ -262,6 +300,18 @@ def _run_one(layout_name: str, graph_path: str, drawing_path: str,
                 # gets clipped at the viewBox edge (sugiyama / arc-bfs /
                 # HOLA / orthogonal layouts visibly cut off otherwise).
                 G.edges[u, v]["polyline"] = True
+        elif curated_geometry:
+            # Curated cohort: lock the curator's curved/polyline edges to
+            # the rescaled nodes. Apply the same node-derived affine that
+            # standardise used (preserves Béziers exactly) to every path
+            # coordinate, then snap endpoints to the rescaled node centres.
+            # Attached as `path` (+ polyline flag) so both the in-memory
+            # metric pass and the `.geg` write see the curves — never
+            # flattened to bends (which would re-save curves as polylines).
+            from ..rescale import standardise_params
+            from ..layouts.curated import rescale_paths
+            cx, cy, scale = standardise_params(raw_positions)
+            rescale_paths(G, curated_geometry, cx, cy, scale)
 
         if do_write:
             out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -273,9 +323,19 @@ def _run_one(layout_name: str, graph_path: str, drawing_path: str,
             tmp = out_path.with_suffix(out_path.suffix + suffix)
             try:
                 import geg as _geg
-                _geg.write_graphml(G, str(tmp))
             except ImportError:
                 _geg = None
+            if _geg is not None:
+                # Dispatch on the drawing's real extension (not the .tmp
+                # suffix): `.geg` keeps curved edges, `.graphml` for the
+                # topology cohorts.
+                if out_path.suffix == ".geg":
+                    _geg.write_geg(G, str(tmp))
+                else:
+                    _geg.write_graphml(G, str(tmp))
+            else:
+                # geg unavailable: only the plain graphml writer is possible.
+                # `.geg` targets require geg and cannot fall back.
                 nx.write_graphml(G, tmp)
             _replace_with_retry(tmp, out_path)
             # Also emit an SVG render alongside so the visual sample
@@ -606,8 +666,12 @@ class LayoutStage(Stage):
         # mid-layout still leaves a usable partial CSV. Timings are
         # batched every 1000 rows to amortise the sidecar write.
         import csv as _csv
-        from .metrics import _fmt
+        from .metrics import _fmt, GEOMETRY_COLUMNS
         from ..manifest import append_metric_timings
+        # The CSV carries the metric columns plus the descriptive geometry
+        # flags; mirrors the standalone metrics stage so both producers of
+        # metrics/<layout>.csv stay header-identical.
+        out_columns = metric_names + GEOMETRY_COLUMNS
         metrics_file = None
         metrics_writer = None
         if metrics_csv_path is not None:
@@ -618,7 +682,7 @@ class LayoutStage(Stage):
                 "a", newline="", encoding="utf-8")
             metrics_writer = _csv.writer(metrics_file)
             if is_fresh:
-                metrics_writer.writerow(["graph_id"] + metric_names)
+                metrics_writer.writerow(["graph_id"] + out_columns)
                 metrics_file.flush()
 
         n_ok = n_na = n_timeout = n_fail = 0
@@ -648,7 +712,7 @@ class LayoutStage(Stage):
                 if mvals and metrics_writer is not None:
                     metrics_writer.writerow(
                         [gid] + [_fmt(mvals.get(name, float("nan")))
-                                 for name in metric_names])
+                                 for name in out_columns])
                     metrics_file.flush()
                     timings_batch.append({"graph_id": gid,
                                            "timings": mtimes})

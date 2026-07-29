@@ -4,12 +4,22 @@ Walks ``out/drawings/<layout>/<category>/<source>/<graph_id>``,
 applies the metric registry, and writes one row per (layout, graph)
 pair to ``out/metrics/<layout>.csv``. Resume-safe: graph_ids already
 present in the per-layout CSV are skipped.
+
+Each row also carries two descriptive geometry flags AFTER the metric
+columns — ``contains_bends`` and ``contains_curves`` (see
+:data:`GEOMETRY_COLUMNS` / :func:`edge_geometry_flags`). They are derived
+straight from the drawing's edge ``path`` strings (not from ``geg`` or the
+manifest properties) and record whether the layout actually drew any
+polyline bends and/or curved edges. The fused mode in ``stages/layout.py``
+emits the identical columns so both producers of ``metrics/<layout>.csv``
+stay header-compatible.
 """
 
 from __future__ import annotations
 
 import csv
 import math
+import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -23,6 +33,53 @@ from ..metrics import METRIC_REGISTRY, make_context
 from ._cleanup import clean_metric_csv, clean_metric_timings
 from .base import PipelineContext, Stage
 from . import register_stage
+
+
+# Descriptive per-drawing geometry flags appended to every metrics CSV
+# AFTER the metric columns. They are NOT metrics (not in METRIC_REGISTRY,
+# not timed) — they record what kind of edge geometry the drawing actually
+# carries, computed directly from the edge `path` strings.
+GEOMETRY_COLUMNS: List[str] = ["contains_bends", "contains_curves"]
+
+# Curve commands (cubic/quadratic/smooth/arc), upper- and lower-case. The
+# exponent letter `e`/`E` of scientific-notation coordinates is deliberately
+# NOT in this set, so it can never be miscounted as a command (the bug in
+# geg.contains_curves). No SVG numeric literal contains C/Q/S/T/A either.
+_CURVE_CMD_RE = re.compile(r"[CQSTAcqsta]")
+# Straight-line commands (line-to / horizontal / vertical), both cases.
+_LINE_CMD_RE = re.compile(r"[LHVlhv]")
+
+
+def edge_geometry_flags(G) -> Dict[str, bool]:
+    """Per-drawing geometry flags derived ONLY from edge ``path`` strings.
+
+    Deliberately independent of ``geg`` and the manifest graph_properties
+    (per spec): we scan the raw SVG ``path`` of every edge.
+
+    - ``contains_curves``: any edge path has a curve command
+      (``C``/``Q``/``S``/``T``/``A``, case-insensitive).
+    - ``contains_bends``: any edge path is a straight-line polyline with an
+      interior vertex — i.e. it has >= 2 line commands (``L``/``H``/``V``).
+      A plain straight edge is exactly one ``M`` + one ``L`` (one line
+      command) and is NOT a bend.
+
+    The two are independent — a drawing may have both (e.g. a path with two
+    ``L`` segments and a ``C``), one, or neither. An edge with no ``path`` is
+    a straight node-to-node chord and contributes neither.
+    """
+    contains_curves = False
+    contains_bends = False
+    for _, _, d in G.edges(data=True):
+        path = d.get("path")
+        if not path:
+            continue
+        if not contains_curves and _CURVE_CMD_RE.search(path):
+            contains_curves = True
+        if not contains_bends and len(_LINE_CMD_RE.findall(path)) >= 2:
+            contains_bends = True
+        if contains_curves and contains_bends:
+            break
+    return {"contains_bends": contains_bends, "contains_curves": contains_curves}
 
 
 def _selected_metrics(ctx: PipelineContext) -> List[str]:
@@ -79,6 +136,14 @@ def compute_in_memory(G, metric_names: List[str]
         except Exception:
             out[name] = float("nan")
         timings[name] = _time.perf_counter() - t0
+    # Append the descriptive geometry flags (GEOMETRY_COLUMNS). Not metrics,
+    # so they ride in the values dict but never the timings dict. Guarded so
+    # a malformed path can't sink the whole row.
+    try:
+        out.update(edge_geometry_flags(G))
+    except Exception:
+        for col in GEOMETRY_COLUMNS:
+            out.setdefault(col, False)
     return out, timings
 
 
@@ -142,8 +207,9 @@ class MetricsStage(Stage):
         is_fresh = not out_csv.exists() or out_csv.stat().st_size == 0
         cf = out_csv.open("a", newline="", encoding="utf-8")
         writer = csv.writer(cf)
+        out_columns = metric_names + GEOMETRY_COLUMNS
         if is_fresh:
-            writer.writerow(["graph_id"] + metric_names)
+            writer.writerow(["graph_id"] + out_columns)
 
         pending: List[Tuple[str, str]] = []
         for r in rows:
@@ -169,7 +235,7 @@ class MetricsStage(Stage):
         def _emit(gid: str, vals: Dict[str, float],
                   metric_timings: Dict[str, float]) -> None:
             writer.writerow([gid] + [_fmt(vals.get(n, float("nan")))
-                                       for n in metric_names])
+                                       for n in out_columns])
             cf.flush()
             timing_buffer.append({"graph_id": gid, "timings": metric_timings})
             # Flush the timings buffer in batches so partial runs leave

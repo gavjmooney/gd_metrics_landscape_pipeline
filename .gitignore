@@ -24,6 +24,7 @@ env/
 ENV/
 
 # IDE / editors
+.claude/
 .idea/
 .vscode/
 *.swp
@@ -40,3 +41,12 @@ logs/
 my-config.toml
 .env
 .env.local
+
+# Local artefacts not for publication
+bb-crcl-04.pdf
+src/graph_generation/layouts/baur_brandes.py
+
+# Analysis cache and excluded data (regenerable / not for release)
+analysis/data/.analysis_cache/
+analysis/data/baur-brandes.csv.excluded
+analysis/cache/

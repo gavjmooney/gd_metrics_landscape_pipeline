@@ -191,9 +191,10 @@ method = "properties"
 # -----------------------------------------------------------------------------
 [layouts]
 
-# "*" runs every algorithm in LAYOUT_REGISTRY (19 in the canonical set).
-# A list restricts to that subset — useful for re-running just one
-# algorithm after a bug fix, e.g. selected = ["kamada-kawai", "FMMM"].
+# "*" runs every algorithm in LAYOUT_REGISTRY (19 in the canonical set:
+# the 18 algorithmic layouts reported in the paper plus the curated
+# passthrough). A list restricts to that subset — useful for re-running
+# just one algorithm after a bug fix, e.g. selected = ["kamada-kawai"].
 selected = "*"
 
 # Names removed from the `selected` set even when "*" is used.
@@ -231,11 +232,16 @@ parallel_layouts = 12
 # -----------------------------------------------------------------------------
 [metrics]
 
-# "*" runs every metric in METRIC_REGISTRY (11 in the canonical set:
+# "*" runs every metric in METRIC_REGISTRY (12 in the canonical set:
 # angular_resolution, aspect_ratio, crossing_angle, edge_crossings,
-# edge_length_deviation, edge_orthogonality, kruskal_stress,
-# neighbourhood_preservation, node_edge_occlusion, node_resolution,
-# node_uniformity). A list restricts the subset.
+# edge_length_deviation, edge_orthogonality, gabriel_ratio_nodes,
+# kruskal_stress, neighbourhood_preservation, node_edge_occlusion,
+# node_resolution, node_uniformity). A list restricts the subset.
+#
+# gabriel_ratio_nodes is straight-line-only by design: it reads node x/y
+# and ignores edge `path`s, so for that metric the edge geometry is
+# collapsed to the straight node-to-node chord regardless of the layout's
+# actual routing. Every other metric is curve-aware (reads the `path`).
 selected = "*"
 
 

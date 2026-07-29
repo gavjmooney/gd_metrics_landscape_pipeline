@@ -35,9 +35,10 @@ def _read_geg(path) -> nx.Graph | None:
 
     Coercion only: undirected, no multi-edges, no self-loops, node
     labels renumbered 0..n-1. The drawing-side attributes (x, y, width,
-    height, shape, colour) come along on the nodes; edge geometry rides
-    along too. We hand the graph straight to :func:`geg.write_graphml`
-    later so the yEd-flavoured graphml gets emitted intact.
+    height, shape, colour) come along on the nodes; edge geometry (the
+    SVG ``path``, including cubic Béziers) rides along on the edges too.
+    The base class writes the graph straight to ``.geg`` via
+    :func:`geg.write_geg`, so the curved edges round-trip losslessly.
     """
     try:
         G = geg.read_geg(str(path))
@@ -112,10 +113,9 @@ def _download_archive(staging_root: Path) -> None:
 class GDCollectionStager(Stager):
     """Download + parse the GD-collection ``.geg`` corpus.
 
-    The base class's ``_write`` default already uses
-    :func:`geg.write_graphml` for the ``graphs_with_drawings``
-    cohort, so the yEd-flavoured drawing survives without an
-    override here.
+    The base class's ``_write`` default writes the ``graphs_with_drawings``
+    cohort back to ``.geg`` via :func:`geg.write_geg`, so the curator's
+    curved edges survive without an override here.
     """
 
     source_name = "gd_collection_v1"

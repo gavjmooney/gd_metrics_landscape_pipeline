@@ -37,6 +37,29 @@ def node_bbox(positions: Mapping[Node, Pos]) -> Tuple[float, float, float, float
     return min(xs), min(ys), max(xs), max(ys)
 
 
+def standardise_params(
+    positions: Mapping[Node, Pos],
+) -> Tuple[float, float, float]:
+    """Return ``(cx, cy, scale)`` — the canonical similarity transform.
+
+    ``(cx, cy)`` is the node-bbox centre; ``scale`` maps the node-bbox
+    diagonal to ``TARGET_DIAG``. Degenerate inputs (empty, single point,
+    coincident nodes — diagonal 0) yield ``scale = 1.0``. The transform
+    each consumer applies is ``(x, y) -> ((x - cx) * scale, (y - cy) * scale)``.
+
+    Shared by :func:`standardise` (node positions + polyline bends) and the
+    curated edge-geometry transform (``layouts.curated.rescale_paths``) so the
+    rescaled edge paths stay locked to the rescaled node positions — both are
+    driven by the *same* node-derived centre and scale.
+    """
+    xmin, ymin, xmax, ymax = node_bbox(positions)
+    cx = (xmin + xmax) / 2.0
+    cy = (ymin + ymax) / 2.0
+    diag = math.hypot(xmax - xmin, ymax - ymin)
+    scale = TARGET_DIAG / diag if diag > 0 else 1.0
+    return cx, cy, scale
+
+
 def standardise(
     positions: Mapping[Node, Pos],
     bends: Mapping[Tuple[Node, Node], List[Pos]] | None,
@@ -50,11 +73,7 @@ def standardise(
     if not positions:
         return {}, {}
 
-    xmin, ymin, xmax, ymax = node_bbox(positions)
-    cx = (xmin + xmax) / 2.0
-    cy = (ymin + ymax) / 2.0
-    diag = math.hypot(xmax - xmin, ymax - ymin)
-    scale = TARGET_DIAG / diag if diag > 0 else 1.0
+    cx, cy, scale = standardise_params(positions)
 
     new_positions: Dict[Node, Pos] = {
         n: ((x - cx) * scale, (y - cy) * scale)
