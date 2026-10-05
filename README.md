@@ -1,7 +1,7 @@
 # graph-generation pipeline
 
 Code for the paper *Does graph structure affect drawing quality?*
-(Mooney, Wybrow, Purchase). The pipeline builds a corpus of small-to-medium
+(Mooney, Wybrow, Purchase) and *Graph drawing metrics: a multidimensional perspective* (Mooney, Kobourov, Wybrow, Purchase). The pipeline builds a corpus of small-to-medium
 graphs (n ≤ 75) from generated, calibration, benchmark, real-world, and
 curated-drawing sources, lays each graph out with every registered layout
 algorithm, and computes readability metrics for every drawing. See the
